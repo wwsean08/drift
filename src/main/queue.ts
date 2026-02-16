@@ -1,5 +1,12 @@
 import { BrowserWindow } from 'electron'
-import { getSettings, getQueue, updateQueueItem, removeQueueItem, clearCompletedItems } from './store'
+import {
+  getSettings,
+  saveSettings,
+  getQueue,
+  updateQueueItem,
+  removeQueueItem,
+  clearCompletedItems
+} from './store'
 import { startEncode, cancelEncode, getActiveJobCount } from './encoder'
 
 let mainWindow: BrowserWindow | null = null
@@ -14,8 +21,16 @@ function sendToRenderer(channel: string, data: unknown): void {
   }
 }
 
+export function setPaused(paused: boolean): void {
+  const settings = getSettings()
+  saveSettings({ ...settings, paused })
+  if (!paused) processQueue()
+}
+
 export function processQueue(): void {
   const settings = getSettings()
+  if (settings.paused) return
+
   const queue = getQueue()
   const activeCount = getActiveJobCount()
   const available = settings.maxParallel - activeCount
@@ -29,31 +44,38 @@ export function processQueue(): void {
     updateQueueItem(item.id, { status: 'encoding', progress: 0, eta: '' })
     sendToRenderer('queue:updated', getQueue())
 
-    startEncode(item.id, item.filePath, settings.outputDir, settings.preset, {
-      onProgress: (id, percent, eta) => {
-        sendToRenderer('queue:progress', { id, progress: percent, eta })
+    startEncode(
+      item.id,
+      item.filePath,
+      settings.outputDir,
+      settings.preset,
+      {
+        onProgress: (id, percent, eta) => {
+          sendToRenderer('queue:progress', { id, progress: percent, eta })
+        },
+        onComplete: (id) => {
+          updateQueueItem(id, {
+            status: 'complete',
+            progress: 100,
+            eta: '',
+            completedAt: Date.now()
+          })
+          sendToRenderer('queue:updated', getQueue())
+          processQueue()
+        },
+        onError: (id, message) => {
+          updateQueueItem(id, {
+            status: 'failed',
+            progress: 0,
+            eta: '',
+            error: message
+          })
+          sendToRenderer('queue:updated', getQueue())
+          processQueue()
+        }
       },
-      onComplete: (id) => {
-        updateQueueItem(id, {
-          status: 'complete',
-          progress: 100,
-          eta: '',
-          completedAt: Date.now()
-        })
-        sendToRenderer('queue:updated', getQueue())
-        processQueue()
-      },
-      onError: (id, message) => {
-        updateQueueItem(id, {
-          status: 'failed',
-          progress: 0,
-          eta: '',
-          error: message
-        })
-        sendToRenderer('queue:updated', getQueue())
-        processQueue()
-      }
-    }, settings.handbrakeCliPath || undefined)
+      settings.handbrakeCliPath || undefined
+    )
   }
 }
 

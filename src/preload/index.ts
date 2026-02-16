@@ -5,11 +5,15 @@ const api = {
   getSettings: () => ipcRenderer.invoke('settings:get'),
   saveSettings: (settings: unknown) => ipcRenderer.invoke('settings:save', settings),
   selectDirectory: () => ipcRenderer.invoke('dialog:selectDirectory'),
-  selectFile: (filters?: { name: string; extensions: string[] }[]) => ipcRenderer.invoke('dialog:selectFile', filters),
+  selectFile: (filters?: { name: string; extensions: string[] }[]) =>
+    ipcRenderer.invoke('dialog:selectFile', filters),
   getQueue: () => ipcRenderer.invoke('queue:get'),
   removeItem: (id: string) => ipcRenderer.invoke('queue:remove', id),
   retryItem: (id: string) => ipcRenderer.invoke('queue:retry', id),
   clearCompleted: () => ipcRenderer.invoke('queue:clearCompleted'),
+  getPaused: () => ipcRenderer.invoke('queue:getPaused'),
+  setPaused: (paused: boolean) => ipcRenderer.invoke('queue:setPaused', paused),
+  getPresets: () => ipcRenderer.invoke('presets:get'),
 
   onQueueUpdated: (callback: (queue: unknown) => void) => {
     const handler = (_event: Electron.IpcRendererEvent, queue: unknown): void => callback(queue)
@@ -18,7 +22,10 @@ const api = {
   },
 
   onQueueProgress: (callback: (data: { id: string; progress: number; eta: string }) => void) => {
-    const handler = (_event: Electron.IpcRendererEvent, data: { id: string; progress: number; eta: string }): void => callback(data)
+    const handler = (
+      _event: Electron.IpcRendererEvent,
+      data: { id: string; progress: number; eta: string }
+    ): void => callback(data)
     ipcRenderer.on('queue:progress', handler)
     return () => ipcRenderer.removeListener('queue:progress', handler)
   },

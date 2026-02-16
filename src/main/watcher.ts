@@ -15,9 +15,7 @@ export function startWatcher(): void {
   const settings = getSettings()
   if (!settings.watchDir) return
 
-  const extensions = settings.videoExtensions.map((ext) =>
-    ext.startsWith('.') ? ext : `.${ext}`
-  )
+  const extensions = settings.videoExtensions.map((ext) => (ext.startsWith('.') ? ext : `.${ext}`))
 
   watcher = watch(settings.watchDir, {
     ignoreInitial: !settings.queueExistingFiles,

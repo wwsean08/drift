@@ -24,11 +24,13 @@ No test framework is configured.
 Drift is an Electron app built with electron-vite (Vite-based toolchain). The main process is the source of truth for all state; the renderer is a pure display layer.
 
 **Three TypeScript project zones** (separate tsconfigs):
+
 - `tsconfig.node.json` — `src/main/` + `src/preload/` (Node/Electron APIs)
 - `tsconfig.web.json` — `src/renderer/` (React, DOM APIs)
 - `tsconfig.json` — composite root that references both
 
 **Main process (`src/main/`):**
+
 - `index.ts` — App entry: creates window, tray, starts watcher, checks for HandBrakeCLI
 - `store.ts` — Persistent state via electron-store (AppSettings + QueueItem[] schema)
 - `watcher.ts` — chokidar file watcher on the configured watch directory
@@ -38,10 +40,12 @@ Drift is an Electron app built with electron-vite (Vite-based toolchain). The ma
 - `ipc.ts` — All IPC handler registrations
 
 **Preload (`src/preload/`):**
+
 - `index.ts` — Exposes `window.api` via contextBridge
 - `index.d.ts` — TypeScript types for the `DriftAPI` interface (used by renderer)
 
 **Renderer (`src/renderer/src/`):**
+
 - Simple tab-based UI (Queue / Settings), no router or state management library
 - `hooks/useIpc.ts` — `useQueue()` hook subscribes to IPC events with cleanup
 - Components use inline styles (no CSS-in-JS library)

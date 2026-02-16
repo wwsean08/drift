@@ -15,27 +15,29 @@ interface QueueItem {
 export function useQueue(): {
   queue: QueueItem[]
   loading: boolean
+  paused: boolean
   removeItem: (id: string) => Promise<void>
   retryItem: (id: string) => Promise<void>
   clearCompleted: () => Promise<void>
+  togglePause: () => Promise<void>
 } {
   const [queue, setQueue] = useState<QueueItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [paused, setPaused] = useState(false)
 
   useEffect(() => {
     window.api.getQueue().then((q) => {
       setQueue(q)
       setLoading(false)
     })
+    window.api.getPaused().then(setPaused)
 
     const cleanupUpdated = window.api.onQueueUpdated((updatedQueue) => {
       setQueue(updatedQueue)
     })
 
     const cleanupProgress = window.api.onQueueProgress(({ id, progress, eta }) => {
-      setQueue((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, progress, eta } : item))
-      )
+      setQueue((prev) => prev.map((item) => (item.id === id ? { ...item, progress, eta } : item)))
     })
 
     return () => {
@@ -56,5 +58,10 @@ export function useQueue(): {
     await window.api.clearCompleted()
   }, [])
 
-  return { queue, loading, removeItem, retryItem, clearCompleted }
+  const togglePause = useCallback(async () => {
+    const newPaused = await window.api.setPaused(!paused)
+    setPaused(newPaused)
+  }, [paused])
+
+  return { queue, loading, paused, removeItem, retryItem, clearCompleted, togglePause }
 }

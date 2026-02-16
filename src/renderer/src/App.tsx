@@ -16,35 +16,60 @@ function App(): React.JSX.Element {
   }, [])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      }}
+    >
       {appError && (
-        <div style={{
-          padding: '8px 16px',
-          backgroundColor: '#fef2f2',
-          borderBottom: '1px solid #fecaca',
-          color: '#991b1b',
-          fontSize: '13px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <div
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#fef2f2',
+            borderBottom: '1px solid #fecaca',
+            color: '#991b1b',
+            fontSize: '13px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
           <span>{appError}</span>
           <button
             onClick={() => setAppError(null)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#991b1b', fontWeight: 'bold' }}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#991b1b',
+              fontWeight: 'bold'
+            }}
           >
             X
           </button>
         </div>
       )}
 
-      <div style={{
-        display: 'flex',
-        borderBottom: '1px solid #e5e7eb',
-        backgroundColor: '#f9fafb'
-      }}>
-        <TabButton label="Queue" active={activeTab === 'queue'} onClick={() => setActiveTab('queue')} />
-        <TabButton label="Settings" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
+      <div
+        style={{
+          display: 'flex',
+          borderBottom: '1px solid #e5e7eb',
+          backgroundColor: '#f9fafb'
+        }}
+      >
+        <TabButton
+          label="Queue"
+          active={activeTab === 'queue'}
+          onClick={() => setActiveTab('queue')}
+        />
+        <TabButton
+          label="Settings"
+          active={activeTab === 'settings'}
+          onClick={() => setActiveTab('settings')}
+        />
       </div>
 
       <div style={{ flex: 1, overflow: 'auto' }}>
@@ -54,7 +79,15 @@ function App(): React.JSX.Element {
   )
 }
 
-function TabButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }): React.JSX.Element {
+function TabButton({
+  label,
+  active,
+  onClick
+}: {
+  label: string
+  active: boolean
+  onClick: () => void
+}): React.JSX.Element {
   return (
     <button
       onClick={onClick}

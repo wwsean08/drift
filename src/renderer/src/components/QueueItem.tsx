@@ -22,26 +22,39 @@ const statusColors: Record<string, string> = {
 
 function QueueItem({ item, onRemove, onRetry }: QueueItemProps): React.JSX.Element {
   return (
-    <div style={{
-      padding: '12px 16px',
-      borderBottom: '1px solid #e5e7eb',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '6px'
-    }}>
+    <div
+      style={{
+        padding: '12px 16px',
+        borderBottom: '1px solid #e5e7eb',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '6px'
+      }}
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontWeight: 500, fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+        <span
+          style={{
+            fontWeight: 500,
+            fontSize: '14px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            flex: 1
+          }}
+        >
           {item.fileName}
         </span>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '12px' }}>
-          <span style={{
-            fontSize: '11px',
-            fontWeight: 600,
-            padding: '2px 8px',
-            borderRadius: '9999px',
-            color: '#fff',
-            backgroundColor: statusColors[item.status]
-          }}>
+          <span
+            style={{
+              fontSize: '11px',
+              fontWeight: 600,
+              padding: '2px 8px',
+              borderRadius: '9999px',
+              color: '#fff',
+              backgroundColor: statusColors[item.status]
+            }}
+          >
             {item.status}
           </span>
           {item.status === 'failed' && (
@@ -57,22 +70,28 @@ function QueueItem({ item, onRemove, onRetry }: QueueItemProps): React.JSX.Eleme
 
       {item.status === 'encoding' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{
-            flex: 1,
-            height: '6px',
-            backgroundColor: '#e5e7eb',
-            borderRadius: '3px',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              width: `${item.progress}%`,
-              height: '100%',
-              backgroundColor: '#3b82f6',
+          <div
+            style={{
+              flex: 1,
+              height: '6px',
+              backgroundColor: '#e5e7eb',
               borderRadius: '3px',
-              transition: 'width 0.3s ease'
-            }} />
+              overflow: 'hidden'
+            }}
+          >
+            <div
+              style={{
+                width: `${item.progress}%`,
+                height: '100%',
+                backgroundColor: '#3b82f6',
+                borderRadius: '3px',
+                transition: 'width 0.3s ease'
+              }}
+            />
           </div>
-          <span style={{ fontSize: '12px', color: '#6b7280', minWidth: '80px', textAlign: 'right' }}>
+          <span
+            style={{ fontSize: '12px', color: '#6b7280', minWidth: '80px', textAlign: 'right' }}
+          >
             {Math.round(item.progress)}%{item.eta ? ` - ${item.eta}` : ''}
           </span>
         </div>

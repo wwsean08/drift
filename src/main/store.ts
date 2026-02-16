@@ -8,6 +8,7 @@ export interface AppSettings {
   videoExtensions: string[]
   queueExistingFiles: boolean
   handbrakeCliPath: string
+  paused: boolean
 }
 
 export type QueueItemStatus = 'pending' | 'encoding' | 'complete' | 'failed'
@@ -37,7 +38,8 @@ const defaults: StoreSchema = {
     maxParallel: 1,
     videoExtensions: ['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.ts'],
     queueExistingFiles: false,
-    handbrakeCliPath: ''
+    handbrakeCliPath: '',
+    paused: false
   },
   queue: []
 }

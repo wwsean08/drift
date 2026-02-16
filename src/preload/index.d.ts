@@ -33,8 +33,13 @@ interface DriftAPI {
   removeItem: (id: string) => Promise<boolean>
   retryItem: (id: string) => Promise<boolean>
   clearCompleted: () => Promise<boolean>
+  getPaused: () => Promise<boolean>
+  setPaused: (paused: boolean) => Promise<boolean>
+  getPresets: () => Promise<Array<{ category: string; name: string }>>
   onQueueUpdated: (callback: (queue: QueueItem[]) => void) => () => void
-  onQueueProgress: (callback: (data: { id: string; progress: number; eta: string }) => void) => () => void
+  onQueueProgress: (
+    callback: (data: { id: string; progress: number; eta: string }) => void
+  ) => () => void
   onAppError: (callback: (message: string) => void) => () => void
 }
 

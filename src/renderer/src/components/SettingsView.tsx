@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface AppSettings {
   watchDir: string
@@ -10,13 +10,24 @@ interface AppSettings {
   handbrakeCliPath: string
 }
 
+interface PresetEntry {
+  category: string
+  name: string
+}
+
 function SettingsView(): React.JSX.Element {
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [presets, setPresets] = useState<PresetEntry[]>([])
+  const [presetDropdownOpen, setPresetDropdownOpen] = useState(false)
+  const [highlightedIndex, setHighlightedIndex] = useState(-1)
+  const presetRef = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     window.api.getSettings().then(setSettings)
+    window.api.getPresets().then(setPresets)
   }, [])
 
   const handleBrowse = async (field: 'watchDir' | 'outputDir'): Promise<void> => {
@@ -40,7 +51,15 @@ function SettingsView(): React.JSX.Element {
   }
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '600px' }}>
+    <div
+      style={{
+        padding: '24px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+        maxWidth: '600px'
+      }}
+    >
       <FieldGroup label="Watch Directory">
         <div style={{ display: 'flex', gap: '8px' }}>
           <input
@@ -80,12 +99,15 @@ function SettingsView(): React.JSX.Element {
             placeholder="Leave empty to use system PATH"
             style={inputStyle}
           />
-          <button onClick={async () => {
-            const file = await window.api.selectFile()
-            if (file && settings) {
-              setSettings({ ...settings, handbrakeCliPath: file })
-            }
-          }} style={browseButtonStyle}>
+          <button
+            onClick={async () => {
+              const file = await window.api.selectFile()
+              if (file && settings) {
+                setSettings({ ...settings, handbrakeCliPath: file })
+              }
+            }}
+            style={browseButtonStyle}
+          >
             Browse
           </button>
         </div>
@@ -95,11 +117,16 @@ function SettingsView(): React.JSX.Element {
       </FieldGroup>
 
       <FieldGroup label="HandBrake Preset">
-        <input
-          type="text"
+        <PresetCombobox
           value={settings.preset}
-          onChange={(e) => setSettings({ ...settings, preset: e.target.value })}
-          style={inputStyle}
+          presets={presets}
+          onChange={(v) => setSettings({ ...settings, preset: v })}
+          open={presetDropdownOpen}
+          setOpen={setPresetDropdownOpen}
+          highlightedIndex={highlightedIndex}
+          setHighlightedIndex={setHighlightedIndex}
+          containerRef={presetRef}
+          dropdownRef={dropdownRef}
         />
       </FieldGroup>
 
@@ -109,7 +136,12 @@ function SettingsView(): React.JSX.Element {
           min={1}
           max={8}
           value={settings.maxParallel}
-          onChange={(e) => setSettings({ ...settings, maxParallel: Math.max(1, Math.min(8, parseInt(e.target.value) || 1)) })}
+          onChange={(e) =>
+            setSettings({
+              ...settings,
+              maxParallel: Math.max(1, Math.min(8, parseInt(e.target.value) || 1))
+            })
+          }
           style={{ ...inputStyle, width: '80px' }}
         />
       </FieldGroup>
@@ -118,10 +150,15 @@ function SettingsView(): React.JSX.Element {
         <input
           type="text"
           value={settings.videoExtensions.join(', ')}
-          onChange={(e) => setSettings({
-            ...settings,
-            videoExtensions: e.target.value.split(',').map((s) => s.trim()).filter(Boolean)
-          })}
+          onChange={(e) =>
+            setSettings({
+              ...settings,
+              videoExtensions: e.target.value
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean)
+            })
+          }
           style={inputStyle}
         />
         <span style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>
@@ -143,17 +180,21 @@ function SettingsView(): React.JSX.Element {
       </FieldGroup>
 
       <div style={{ marginTop: '8px' }}>
-        <button onClick={handleSave} disabled={saving} style={{
-          padding: '8px 24px',
-          backgroundColor: '#3b82f6',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '6px',
-          fontSize: '14px',
-          fontWeight: 500,
-          cursor: saving ? 'not-allowed' : 'pointer',
-          opacity: saving ? 0.7 : 1
-        }}>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          style={{
+            padding: '8px 24px',
+            backgroundColor: '#3b82f6',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '6px',
+            fontSize: '14px',
+            fontWeight: 500,
+            cursor: saving ? 'not-allowed' : 'pointer',
+            opacity: saving ? 0.7 : 1
+          }}
+        >
           {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Settings'}
         </button>
       </div>
@@ -161,7 +202,182 @@ function SettingsView(): React.JSX.Element {
   )
 }
 
-function FieldGroup({ label, children }: { label: string; children: React.ReactNode }): React.JSX.Element {
+function PresetCombobox({
+  value,
+  presets,
+  onChange,
+  open,
+  setOpen,
+  highlightedIndex,
+  setHighlightedIndex,
+  containerRef,
+  dropdownRef
+}: {
+  value: string
+  presets: PresetEntry[]
+  onChange: (v: string) => void
+  open: boolean
+  setOpen: (v: boolean) => void
+  highlightedIndex: number
+  setHighlightedIndex: (v: number) => void
+  containerRef: React.RefObject<HTMLDivElement | null>
+  dropdownRef: React.RefObject<HTMLDivElement | null>
+}): React.JSX.Element {
+  const query = value.toLowerCase()
+  const filtered = presets.filter((p) => p.name.toLowerCase().includes(query))
+
+  // Build grouped list with category headers interleaved
+  const items: Array<{ type: 'category'; label: string } | { type: 'preset'; entry: PresetEntry }> =
+    []
+  let lastCategory = ''
+  for (const entry of filtered) {
+    if (entry.category !== lastCategory) {
+      items.push({ type: 'category', label: entry.category })
+      lastCategory = entry.category
+    }
+    items.push({ type: 'preset', entry })
+  }
+
+  const selectableIndices = items
+    .map((item, i) => (item.type === 'preset' ? i : -1))
+    .filter((i) => i >= 0)
+
+  const handleKeyDown = (e: React.KeyboardEvent): void => {
+    if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      setOpen(true)
+      setHighlightedIndex(selectableIndices[0] ?? -1)
+      e.preventDefault()
+      return
+    }
+
+    if (!open) return
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      const currentPos = selectableIndices.indexOf(highlightedIndex)
+      const next = selectableIndices[currentPos + 1] ?? selectableIndices[0]
+      setHighlightedIndex(next ?? -1)
+      scrollToIndex(next, dropdownRef)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      const currentPos = selectableIndices.indexOf(highlightedIndex)
+      const prev =
+        selectableIndices[currentPos - 1] ?? selectableIndices[selectableIndices.length - 1]
+      setHighlightedIndex(prev ?? -1)
+      scrollToIndex(prev, dropdownRef)
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      const item = items[highlightedIndex]
+      if (item && item.type === 'preset') {
+        onChange(item.entry.name)
+        setOpen(false)
+      }
+    } else if (e.key === 'Escape') {
+      setOpen(false)
+    }
+  }
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent): void => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  return (
+    <div ref={containerRef} style={{ position: 'relative' }}>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value)
+          setOpen(true)
+          setHighlightedIndex(-1)
+        }}
+        onFocus={() => setOpen(true)}
+        onKeyDown={handleKeyDown}
+        placeholder="Type to search presets..."
+        style={inputStyle}
+      />
+      {open && items.length > 0 && (
+        <div
+          ref={dropdownRef}
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            maxHeight: '240px',
+            overflowY: 'auto',
+            backgroundColor: '#fff',
+            border: '1px solid #d1d5db',
+            borderRadius: '6px',
+            marginTop: '4px',
+            zIndex: 50,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+          }}
+        >
+          {items.map((item, i) =>
+            item.type === 'category' ? (
+              <div
+                key={`cat-${item.label}`}
+                style={{
+                  padding: '6px 10px 2px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: '#9ca3af',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  borderTop: i > 0 ? '1px solid #f3f4f6' : undefined
+                }}
+              >
+                {item.label}
+              </div>
+            ) : (
+              <div
+                key={item.entry.name}
+                data-index={i}
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  onChange(item.entry.name)
+                  setOpen(false)
+                }}
+                onMouseEnter={() => setHighlightedIndex(i)}
+                style={{
+                  padding: '6px 10px 6px 20px',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  backgroundColor: i === highlightedIndex ? '#eff6ff' : 'transparent',
+                  color: '#374151'
+                }}
+              >
+                {item.entry.name}
+              </div>
+            )
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function scrollToIndex(index: number, ref: React.RefObject<HTMLDivElement | null>): void {
+  if (!ref.current || index < 0) return
+  const el = ref.current.querySelector(`[data-index="${index}"]`) as HTMLElement | null
+  if (el) el.scrollIntoView({ block: 'nearest' })
+}
+
+function FieldGroup({
+  label,
+  children
+}: {
+  label: string
+  children: React.ReactNode
+}): React.JSX.Element {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
       <label style={{ fontSize: '13px', fontWeight: 600, color: '#374151' }}>{label}</label>
