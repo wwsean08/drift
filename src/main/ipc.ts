@@ -1,5 +1,6 @@
 import { ipcMain, dialog, BrowserWindow } from 'electron'
 import { execFile } from 'child_process'
+import { readFileSync } from 'fs'
 import { getSettings, saveSettings, getQueue, AppSettings } from './store'
 import { startWatcher } from './watcher'
 import {
@@ -13,6 +14,28 @@ import {
 interface PresetEntry {
   category: string
   name: string
+}
+
+function parseCustomPresetFile(filePath: string): PresetEntry[] {
+  try {
+    const data = JSON.parse(readFileSync(filePath, 'utf-8'))
+    const presetList = data?.PresetList
+    if (!Array.isArray(presetList)) return []
+    return presetList
+      .filter((p: Record<string, unknown>) => typeof p.PresetName === 'string')
+      .map((p: Record<string, unknown>) => ({ category: 'Custom', name: p.PresetName as string }))
+  } catch {
+    return []
+  }
+}
+
+function getCustomPresets(): PresetEntry[] {
+  const settings = getSettings()
+  const presets: PresetEntry[] = []
+  for (const filePath of settings.customPresetPaths || []) {
+    presets.push(...parseCustomPresetFile(filePath))
+  }
+  return presets
 }
 
 function parsePresetList(output: string): PresetEntry[] {
@@ -114,7 +137,9 @@ export function registerIpcHandlers(): void {
     const settings = getSettings()
     const cliPath = settings.handbrakeCliPath || 'HandBrakeCLI'
 
-    return new Promise((resolve) => {
+    const custom = getCustomPresets()
+
+    const builtIn: PresetEntry[] = await new Promise((resolve) => {
       execFile(cliPath, ['--preset-list'], { timeout: 10000 }, (error, _stdout, stderr) => {
         if (error && !stderr) {
           resolve([])
@@ -123,5 +148,40 @@ export function registerIpcHandlers(): void {
         resolve(parsePresetList(stderr))
       })
     })
+
+    return [...custom, ...builtIn]
   })
+
+  ipcMain.handle('presets:importCustom', async (): Promise<PresetEntry[]> => {
+    const window = BrowserWindow.getFocusedWindow()
+    if (!window) return []
+
+    const result = await dialog.showOpenDialog(window, {
+      properties: ['openFile', 'multiSelections'],
+      filters: [{ name: 'HandBrake Preset', extensions: ['json'] }]
+    })
+
+    if (result.canceled || result.filePaths.length === 0) return []
+
+    const settings = getSettings()
+    const paths = new Set(settings.customPresetPaths || [])
+    for (const p of result.filePaths) {
+      paths.add(p)
+    }
+    saveSettings({ ...settings, customPresetPaths: [...paths] })
+
+    return getCustomPresets()
+  })
+
+  ipcMain.handle(
+    'presets:removeCustom',
+    (_event, filePath: string): PresetEntry[] => {
+      const settings = getSettings()
+      saveSettings({
+        ...settings,
+        customPresetPaths: (settings.customPresetPaths || []).filter((p) => p !== filePath)
+      })
+      return getCustomPresets()
+    }
+  )
 }

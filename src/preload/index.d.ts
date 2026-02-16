@@ -8,6 +8,7 @@ interface AppSettings {
   videoExtensions: string[]
   queueExistingFiles: boolean
   handbrakeCliPath: string
+  customPresetPaths: string[]
 }
 
 type QueueItemStatus = 'pending' | 'encoding' | 'complete' | 'failed'
@@ -36,6 +37,9 @@ interface DriftAPI {
   getPaused: () => Promise<boolean>
   setPaused: (paused: boolean) => Promise<boolean>
   getPresets: () => Promise<Array<{ category: string; name: string }>>
+  importCustomPreset: () => Promise<Array<{ category: string; name: string }>>
+  removeCustomPreset: (filePath: string) => Promise<Array<{ category: string; name: string }>>
+  onPausedUpdated: (callback: (paused: boolean) => void) => () => void
   onQueueUpdated: (callback: (queue: QueueItem[]) => void) => () => void
   onQueueProgress: (
     callback: (data: { id: string; progress: number; eta: string }) => void

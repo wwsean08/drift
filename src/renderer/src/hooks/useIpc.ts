@@ -40,9 +40,14 @@ export function useQueue(): {
       setQueue((prev) => prev.map((item) => (item.id === id ? { ...item, progress, eta } : item)))
     })
 
+    const cleanupPaused = window.api.onPausedUpdated((newPaused) => {
+      setPaused(newPaused)
+    })
+
     return () => {
       cleanupUpdated()
       cleanupProgress()
+      cleanupPaused()
     }
   }, [])
 

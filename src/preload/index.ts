@@ -14,6 +14,8 @@ const api = {
   getPaused: () => ipcRenderer.invoke('queue:getPaused'),
   setPaused: (paused: boolean) => ipcRenderer.invoke('queue:setPaused', paused),
   getPresets: () => ipcRenderer.invoke('presets:get'),
+  importCustomPreset: () => ipcRenderer.invoke('presets:importCustom'),
+  removeCustomPreset: (filePath: string) => ipcRenderer.invoke('presets:removeCustom', filePath),
 
   onQueueUpdated: (callback: (queue: unknown) => void) => {
     const handler = (_event: Electron.IpcRendererEvent, queue: unknown): void => callback(queue)
@@ -28,6 +30,12 @@ const api = {
     ): void => callback(data)
     ipcRenderer.on('queue:progress', handler)
     return () => ipcRenderer.removeListener('queue:progress', handler)
+  },
+
+  onPausedUpdated: (callback: (paused: boolean) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, paused: boolean): void => callback(paused)
+    ipcRenderer.on('paused:updated', handler)
+    return () => ipcRenderer.removeListener('paused:updated', handler)
   },
 
   onAppError: (callback: (message: string) => void) => {

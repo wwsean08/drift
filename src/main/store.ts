@@ -9,6 +9,7 @@ export interface AppSettings {
   queueExistingFiles: boolean
   handbrakeCliPath: string
   paused: boolean
+  customPresetPaths: string[]
 }
 
 export type QueueItemStatus = 'pending' | 'encoding' | 'complete' | 'failed'
@@ -39,7 +40,8 @@ const defaults: StoreSchema = {
     videoExtensions: ['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.ts'],
     queueExistingFiles: false,
     handbrakeCliPath: '',
-    paused: false
+    paused: false,
+    customPresetPaths: []
   },
   queue: []
 }
@@ -47,7 +49,7 @@ const defaults: StoreSchema = {
 export const store = new Store<StoreSchema>({ defaults })
 
 export function getSettings(): AppSettings {
-  return store.get('settings')
+  return { ...defaults.settings, ...store.get('settings') }
 }
 
 export function saveSettings(settings: AppSettings): void {

@@ -8,6 +8,7 @@ import {
   clearCompletedItems
 } from './store'
 import { startEncode, cancelEncode, getActiveJobCount } from './encoder'
+import { rebuildTrayMenu } from './tray'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -24,6 +25,8 @@ function sendToRenderer(channel: string, data: unknown): void {
 export function setPaused(paused: boolean): void {
   const settings = getSettings()
   saveSettings({ ...settings, paused })
+  sendToRenderer('paused:updated', paused)
+  rebuildTrayMenu()
   if (!paused) processQueue()
 }
 
@@ -61,6 +64,7 @@ export function processQueue(): void {
             completedAt: Date.now()
           })
           sendToRenderer('queue:updated', getQueue())
+          rebuildTrayMenu()
           processQueue()
         },
         onError: (id, message) => {
@@ -71,10 +75,12 @@ export function processQueue(): void {
             error: message
           })
           sendToRenderer('queue:updated', getQueue())
+          rebuildTrayMenu()
           processQueue()
         }
       },
-      settings.handbrakeCliPath || undefined
+      settings.handbrakeCliPath || undefined,
+      (settings.customPresetPaths || []).length > 0 ? settings.customPresetPaths : undefined
     )
   }
 }
@@ -92,6 +98,7 @@ export function handleRemoveItem(id: string): void {
   cancelEncode(id)
   removeQueueItem(id)
   sendToRenderer('queue:updated', getQueue())
+  rebuildTrayMenu()
   processQueue()
 }
 
@@ -104,4 +111,5 @@ export function handleRetryItem(id: string): void {
 export function handleClearCompleted(): void {
   clearCompletedItems()
   sendToRenderer('queue:updated', getQueue())
+  rebuildTrayMenu()
 }

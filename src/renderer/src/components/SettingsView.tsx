@@ -8,6 +8,7 @@ interface AppSettings {
   videoExtensions: string[]
   queueExistingFiles: boolean
   handbrakeCliPath: string
+  customPresetPaths: string[]
 }
 
 interface PresetEntry {
@@ -128,6 +129,74 @@ function SettingsView(): React.JSX.Element {
           containerRef={presetRef}
           dropdownRef={dropdownRef}
         />
+        <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <button
+            onClick={async () => {
+              const custom = await window.api.importCustomPreset()
+              if (custom.length > 0) {
+                const updated = await window.api.getSettings()
+                setSettings(updated)
+                const allPresets = await window.api.getPresets()
+                setPresets(allPresets)
+              }
+            }}
+            style={browseButtonStyle}
+          >
+            Import Custom Preset...
+          </button>
+          {(settings.customPresetPaths || []).length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {(settings.customPresetPaths || []).map((p) => (
+                <div
+                  key={p}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '12px',
+                    color: '#6b7280'
+                  }}
+                >
+                  <span
+                    style={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      flex: 1
+                    }}
+                    title={p}
+                  >
+                    {p.split('/').pop()}
+                  </span>
+                  <button
+                    onClick={async () => {
+                      await window.api.removeCustomPreset(p)
+                      const updated = await window.api.getSettings()
+                      setSettings(updated)
+                      const allPresets = await window.api.getPresets()
+                      setPresets(allPresets)
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#9ca3af',
+                      fontSize: '14px',
+                      padding: '0 2px',
+                      lineHeight: 1
+                    }}
+                    title="Remove custom preset file"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <span style={{ fontSize: '11px', color: '#9ca3af' }}>
+            Export presets from HandBrake GUI (Presets → Export) then import the JSON file here.
+          </span>
+        </div>
       </FieldGroup>
 
       <FieldGroup label="Max Parallel Encodes">
