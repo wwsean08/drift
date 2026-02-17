@@ -1,4 +1,4 @@
-import { ipcMain, dialog, BrowserWindow } from 'electron'
+import { ipcMain, dialog, BrowserWindow, app } from 'electron'
 import { execFile } from 'child_process'
 import { readFileSync } from 'fs'
 import { getSettings, saveSettings, getQueue, AppSettings } from './store'
@@ -132,6 +132,8 @@ export function registerIpcHandlers(): void {
     handleClearCompleted()
     return true
   })
+
+  ipcMain.handle('app:getVersion', () => app.getVersion())
 
   ipcMain.handle('presets:get', async (): Promise<PresetEntry[]> => {
     const settings = getSettings()

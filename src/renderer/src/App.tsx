@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import QueueView from './components/QueueView'
 import SettingsView from './components/SettingsView'
+import AboutView from './components/AboutView'
 
-type Tab = 'queue' | 'settings'
+type Tab = 'queue' | 'settings' | 'about'
 
 function App(): React.JSX.Element {
   const [activeTab, setActiveTab] = useState<Tab>('queue')
@@ -70,10 +71,17 @@ function App(): React.JSX.Element {
           active={activeTab === 'settings'}
           onClick={() => setActiveTab('settings')}
         />
+        <TabButton
+          label="About"
+          active={activeTab === 'about'}
+          onClick={() => setActiveTab('about')}
+        />
       </div>
 
       <div style={{ flex: 1, overflow: 'auto' }}>
-        {activeTab === 'queue' ? <QueueView /> : <SettingsView />}
+        {activeTab === 'queue' && <QueueView />}
+        {activeTab === 'settings' && <SettingsView />}
+        {activeTab === 'about' && <AboutView />}
       </div>
     </div>
   )

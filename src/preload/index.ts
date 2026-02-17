@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 const api = {
+  getAppVersion: () => ipcRenderer.invoke('app:getVersion'),
   getSettings: () => ipcRenderer.invoke('settings:get'),
   saveSettings: (settings: unknown) => ipcRenderer.invoke('settings:save', settings),
   selectDirectory: () => ipcRenderer.invoke('dialog:selectDirectory'),

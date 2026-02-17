@@ -139,5 +139,8 @@ dist
 out/
 dist/
 
+# Generated files
+src/renderer/src/generated/
+
 # Claude Code
 .claude/

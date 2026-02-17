@@ -26,6 +26,7 @@ interface QueueItem {
 }
 
 interface DriftAPI {
+  getAppVersion: () => Promise<string>
   getSettings: () => Promise<AppSettings>
   saveSettings: (settings: AppSettings) => Promise<boolean>
   selectDirectory: () => Promise<string | null>
