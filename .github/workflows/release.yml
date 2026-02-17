@@ -16,11 +16,11 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            build_cmd: npm run build:mac
+            build_cmd: npm run publish:mac
           - os: windows-latest
-            build_cmd: npm run build:win
+            build_cmd: npm run publish:win
           - os: ubuntu-latest
-            build_cmd: npm run build:linux
+            build_cmd: npm run publish:linux
 
     runs-on: ${{ matrix.os }}
 
@@ -35,6 +35,8 @@ jobs:
       - run: npm ci
 
       - run: ${{ matrix.build_cmd }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v6
         with:
