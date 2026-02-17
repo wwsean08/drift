@@ -7,6 +7,9 @@ let tray: Tray | null = null
 let mainWindow: BrowserWindow | null = null
 let isQuitting = false
 
+const defaultIconPath = join(__dirname, '../../resources/trayIconDefault.png')
+const encodingIconPath = join(__dirname, '../../resources/trayIconEncoding.png')
+
 export function getIsQuitting(): boolean {
   return isQuitting
 }
@@ -20,6 +23,9 @@ export function rebuildTrayMenu(): void {
     (item) => item.status === 'pending' || item.status === 'encoding'
   )
   const count = pendingOrEncoding.length
+  const isEncoding = queue.some((item) => item.status === 'encoding')
+  const iconPath = isEncoding ? encodingIconPath : defaultIconPath
+  tray.setImage(nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 }))
   const win = mainWindow
 
   const contextMenu = Menu.buildFromTemplate([
@@ -55,8 +61,7 @@ export function rebuildTrayMenu(): void {
 }
 
 export function createTray(win: BrowserWindow): void {
-  const iconPath = join(__dirname, '../../resources/trayIcon.png')
-  const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
+  const icon = nativeImage.createFromPath(defaultIconPath).resize({ width: 16, height: 16 })
 
   mainWindow = win
   tray = new Tray(icon)
