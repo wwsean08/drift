@@ -43,6 +43,12 @@ const api = {
     const handler = (_event: Electron.IpcRendererEvent, message: string): void => callback(message)
     ipcRenderer.on('app:error', handler)
     return () => ipcRenderer.removeListener('app:error', handler)
+  },
+
+  onHandbrakeValid: (callback: () => void) => {
+    const handler = (): void => callback()
+    ipcRenderer.on('app:handbrake-valid', handler)
+    return () => ipcRenderer.removeListener('app:handbrake-valid', handler)
   }
 }
 

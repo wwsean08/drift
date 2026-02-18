@@ -46,6 +46,7 @@ interface DriftAPI {
     callback: (data: { id: string; progress: number; eta: string }) => void
   ) => () => void
   onAppError: (callback: (message: string) => void) => () => void
+  onHandbrakeValid: (callback: () => void) => () => void
 }
 
 declare global {

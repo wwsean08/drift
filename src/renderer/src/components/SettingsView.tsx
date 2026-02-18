@@ -42,6 +42,8 @@ function SettingsView(): React.JSX.Element {
     if (!settings) return
     setSaving(true)
     await window.api.saveSettings(settings)
+    const allPresets = await window.api.getPresets()
+    setPresets(allPresets)
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
