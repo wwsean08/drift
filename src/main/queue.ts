@@ -81,7 +81,8 @@ export function processQueue(): void {
         }
       },
       settings.handbrakeCliPath || undefined,
-      (settings.customPresetPaths || []).length > 0 ? settings.customPresetPaths : undefined
+      (settings.customPresetPaths || []).length > 0 ? settings.customPresetPaths : undefined,
+      settings.outputFormat || 'm4v'
     )
   }
 }

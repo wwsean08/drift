@@ -40,10 +40,11 @@ export function startEncode(
   preset: string,
   callbacks: EncodeCallbacks,
   handbrakeCliPath?: string,
-  customPresetPaths?: string[]
+  customPresetPaths?: string[],
+  outputFormat: 'm4v' | 'mp4' | 'mkv' | 'webm' = 'm4v'
 ): void {
   const baseName = path.basename(inputPath, path.extname(inputPath))
-  const outputPath = path.join(outputDir, `${baseName}.m4v`)
+  const outputPath = path.join(outputDir, `${baseName}.${outputFormat}`)
 
   const spawnOptions: Record<string, string> = {
     input: inputPath,

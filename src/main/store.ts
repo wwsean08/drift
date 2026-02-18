@@ -10,6 +10,7 @@ export interface AppSettings {
   handbrakeCliPath: string
   paused: boolean
   customPresetPaths: string[]
+  outputFormat: 'm4v' | 'mp4' | 'mkv' | 'webm'
 }
 
 export type QueueItemStatus = 'pending' | 'encoding' | 'complete' | 'failed'
@@ -41,7 +42,8 @@ const defaults: StoreSchema = {
     queueExistingFiles: false,
     handbrakeCliPath: '',
     paused: false,
-    customPresetPaths: []
+    customPresetPaths: [],
+    outputFormat: 'm4v'
   },
   queue: []
 }
