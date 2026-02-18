@@ -1,5 +1,6 @@
 appId: com.drift.app
 productName: Drift
+icon: resources/icon.png
 directories:
   buildResources: build
 files:
