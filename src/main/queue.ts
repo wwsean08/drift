@@ -46,6 +46,7 @@ export function processQueue(): void {
   for (const item of toStart) {
     updateQueueItem(item.id, { status: 'encoding', progress: 0, eta: '' })
     sendToRenderer('queue:updated', getQueue())
+    rebuildTrayMenu()
 
     startEncode(
       item.id,
