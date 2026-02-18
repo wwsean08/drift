@@ -1,6 +1,7 @@
 appId: com.drift.app
 productName: Drift
 icon: resources/icon.png
+afterPack: scripts/afterPack.mjs
 directories:
   buildResources: build
 files:
@@ -20,7 +21,8 @@ nsis:
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
-  entitlementsInherit: build/entitlements.mac.plist
+  identity: null
+  hardenedRuntime: false
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
     - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
