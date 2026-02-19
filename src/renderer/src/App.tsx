@@ -10,10 +10,16 @@ function App(): React.JSX.Element {
   const [appError, setAppError] = useState<string | null>(null)
 
   useEffect(() => {
-    const cleanup = window.api.onAppError((message) => {
+    const cleanupError = window.api.onAppError((message) => {
       setAppError(message)
     })
-    return cleanup
+    const cleanupHandbrake = window.api.onHandbrakeValid(() => {
+      setAppError(null)
+    })
+    return () => {
+      cleanupError()
+      cleanupHandbrake()
+    }
   }, [])
 
   return (

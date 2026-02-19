@@ -1,5 +1,5 @@
 import { ipcMain, dialog, BrowserWindow, app } from 'electron'
-import { execFile } from 'child_process'
+import { exec, execFile } from 'child_process'
 import { readFileSync } from 'fs'
 import { getSettings, saveSettings, getQueue, AppSettings } from './store'
 import { startWatcher } from './watcher'
@@ -54,12 +54,21 @@ function parsePresetList(output: string): PresetEntry[] {
   return presets
 }
 
-export function registerIpcHandlers(): void {
+export function checkHandBrakeCLI(customPath?: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const cmd = customPath ? `"${customPath}" --version` : 'HandBrakeCLI --version'
+    exec(cmd, (error) => {
+      resolve(!error)
+    })
+  })
+}
+
+export function registerIpcHandlers(win: BrowserWindow): void {
   ipcMain.handle('settings:get', () => {
     return getSettings()
   })
 
-  ipcMain.handle('settings:save', (_event, settings: AppSettings) => {
+  ipcMain.handle('settings:save', async (_event, settings: AppSettings) => {
     const oldSettings = getSettings()
     saveSettings(settings)
 
@@ -72,6 +81,19 @@ export function registerIpcHandlers(): void {
 
     if (oldSettings.maxParallel !== settings.maxParallel) {
       processQueue()
+    }
+
+    if (oldSettings.handbrakeCliPath !== settings.handbrakeCliPath) {
+      const valid = await checkHandBrakeCLI(settings.handbrakeCliPath || undefined)
+      if (valid) {
+        win.webContents.send('app:handbrake-valid')
+        processQueue()
+      } else {
+        win.webContents.send(
+          'app:error',
+          'HandBrakeCLI not found. Please install HandBrake and ensure HandBrakeCLI is in your PATH, or set a custom path in Settings.'
+        )
+      }
     }
 
     return true

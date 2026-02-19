@@ -1,9 +1,8 @@
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import { exec } from 'child_process'
 import icon from '../../resources/icon.png?asset'
-import { registerIpcHandlers } from './ipc'
+import { registerIpcHandlers, checkHandBrakeCLI } from './ipc'
 import { recoverFromCrash, processQueue, setMainWindow } from './queue'
 import { createTray, getIsQuitting } from './tray'
 import { startWatcher, setOnFileAdded } from './watcher'
@@ -47,15 +46,6 @@ function createWindow(): BrowserWindow {
   return mainWindow
 }
 
-function checkHandBrakeCLI(customPath?: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const cmd = customPath ? `"${customPath}" --version` : 'HandBrakeCLI --version'
-    exec(cmd, (error) => {
-      resolve(!error)
-    })
-  })
-}
-
 app.whenReady().then(async () => {
   electronApp.setAppUserModelId('com.drift.app')
 
@@ -63,10 +53,10 @@ app.whenReady().then(async () => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  registerIpcHandlers()
   recoverFromCrash()
 
   const mainWindow = createWindow()
+  registerIpcHandlers(mainWindow)
   setMainWindow(mainWindow)
 
   createTray(mainWindow)
