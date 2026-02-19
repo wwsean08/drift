@@ -17,8 +17,15 @@ interface PresetEntry {
   name: string
 }
 
-function SettingsView(): React.JSX.Element {
+function SettingsView({
+  onDirtyChange,
+  saveRef
+}: {
+  onDirtyChange: (dirty: boolean) => void
+  saveRef: React.RefObject<(() => Promise<void>) | null>
+}): React.JSX.Element {
   const [settings, setSettings] = useState<AppSettings | null>(null)
+  const [originalSettings, setOriginalSettings] = useState<AppSettings | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [presets, setPresets] = useState<PresetEntry[]>([])
@@ -27,10 +34,26 @@ function SettingsView(): React.JSX.Element {
   const presetRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
+  const isDirty =
+    settings !== null &&
+    originalSettings !== null &&
+    JSON.stringify(settings) !== JSON.stringify(originalSettings)
+
   useEffect(() => {
-    window.api.getSettings().then(setSettings)
+    window.api.getSettings().then((s) => {
+      setSettings(s)
+      setOriginalSettings(s)
+    })
     window.api.getPresets().then(setPresets)
   }, [])
+
+  useEffect(() => {
+    onDirtyChange(isDirty)
+  }, [isDirty])
+
+  useEffect(() => {
+    saveRef.current = handleSave
+  })
 
   const handleBrowse = async (field: 'watchDir' | 'outputDir'): Promise<void> => {
     const dir = await window.api.selectDirectory()
@@ -45,6 +68,7 @@ function SettingsView(): React.JSX.Element {
     await window.api.saveSettings(settings)
     const allPresets = await window.api.getPresets()
     setPresets(allPresets)
+    setOriginalSettings(settings)
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
@@ -139,6 +163,7 @@ function SettingsView(): React.JSX.Element {
               if (custom.length > 0) {
                 const updated = await window.api.getSettings()
                 setSettings(updated)
+                setOriginalSettings(updated)
                 const allPresets = await window.api.getPresets()
                 setPresets(allPresets)
               }
@@ -176,6 +201,7 @@ function SettingsView(): React.JSX.Element {
                       await window.api.removeCustomPreset(p)
                       const updated = await window.api.getSettings()
                       setSettings(updated)
+                      setOriginalSettings(updated)
                       const allPresets = await window.api.getPresets()
                       setPresets(allPresets)
                     }}
