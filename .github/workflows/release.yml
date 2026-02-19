@@ -57,10 +57,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - uses: actions/download-artifact@v5
         with:
           path: artifacts
           merge-multiple: true
+
+      - name: Generate release notes
+        uses: orhun/git-cliff-action@e16f179f0be49ecdfe63753837f20b9531642772  # v4
+        with:
+          config: cliff.toml
+          args: --verbose --latest --strip all
+        env:
+          OUTPUT: RELEASE_NOTES.md
+          GITHUB_REPO: ${{ github.repository }}
 
       - name: Generate attestations
         uses: actions/attest-build-provenance@v3
@@ -68,7 +81,7 @@ jobs:
           subject-path: 'artifacts/*'
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b  # v2
         with:
           files: artifacts/*
-          generate_release_notes: true
+          body_path: RELEASE_NOTES.md
