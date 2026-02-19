@@ -9,6 +9,7 @@ interface AppSettings {
   queueExistingFiles: boolean
   handbrakeCliPath: string
   customPresetPaths: string[]
+  outputFormat: 'm4v' | 'mp4' | 'mkv' | 'webm'
 }
 
 type QueueItemStatus = 'pending' | 'encoding' | 'complete' | 'failed'

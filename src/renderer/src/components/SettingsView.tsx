@@ -9,6 +9,7 @@ interface AppSettings {
   queueExistingFiles: boolean
   handbrakeCliPath: string
   customPresetPaths: string[]
+  outputFormat: 'm4v' | 'mp4' | 'mkv' | 'webm'
 }
 
 interface PresetEntry {
@@ -197,6 +198,27 @@ function SettingsView(): React.JSX.Element {
             Export presets from HandBrake GUI (Presets → Export) then import the JSON file here.
           </span>
         </div>
+      </FieldGroup>
+
+      <FieldGroup label="Output Format">
+        <select
+          value={settings.outputFormat}
+          onChange={(e) =>
+            setSettings({
+              ...settings,
+              outputFormat: e.target.value as 'm4v' | 'mp4' | 'mkv' | 'webm'
+            })
+          }
+          style={{ ...inputStyle, flex: 'none', width: '120px' }}
+        >
+          <option value="m4v">m4v</option>
+          <option value="mp4">mp4</option>
+          <option value="mkv">mkv</option>
+          <option value="webm">webm</option>
+        </select>
+        <span style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>
+          Output container format. Ensure your preset is compatible with the chosen format.
+        </span>
       </FieldGroup>
 
       <FieldGroup label="Max Parallel Encodes">
