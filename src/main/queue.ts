@@ -57,12 +57,13 @@ export function processQueue(): void {
         onProgress: (id, percent, eta) => {
           sendToRenderer('queue:progress', { id, progress: percent, eta })
         },
-        onComplete: (id) => {
+        onComplete: (id, outputFilePath) => {
           updateQueueItem(id, {
             status: 'complete',
             progress: 100,
             eta: '',
-            completedAt: Date.now()
+            completedAt: Date.now(),
+            outputFilePath
           })
           sendToRenderer('queue:updated', getQueue())
           rebuildTrayMenu()

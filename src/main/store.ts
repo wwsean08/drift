@@ -26,6 +26,7 @@ export interface QueueItem {
   error?: string
   addedAt: number
   completedAt?: number
+  outputFilePath?: string
 }
 
 export interface StoreSchema {

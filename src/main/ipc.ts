@@ -1,4 +1,4 @@
-import { ipcMain, dialog, BrowserWindow, app, nativeTheme } from 'electron'
+import { ipcMain, dialog, BrowserWindow, app, nativeTheme, clipboard } from 'electron'
 import { exec, execFile } from 'child_process'
 import { readFileSync } from 'fs'
 import { getSettings, saveSettings, getQueue, AppSettings } from './store'
@@ -162,6 +162,10 @@ export function registerIpcHandlers(win: BrowserWindow): void {
   })
 
   ipcMain.handle('app:getVersion', () => app.getVersion())
+
+  ipcMain.handle('clipboard:write', (_event, text: string) => {
+    clipboard.writeText(text)
+  })
 
   ipcMain.handle('presets:get', async (): Promise<PresetEntry[]> => {
     const settings = getSettings()

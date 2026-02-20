@@ -1,3 +1,5 @@
+import { Copy, Trash2, RotateCcw } from 'lucide-react'
+
 interface QueueItemData {
   id: string
   fileName: string
@@ -5,6 +7,7 @@ interface QueueItemData {
   progress: number
   eta: string
   error?: string
+  outputFilePath?: string
 }
 
 interface QueueItemProps {
@@ -60,15 +63,25 @@ function QueueItem({ item, index, onRemove, onRetry }: QueueItemProps): React.JS
             {item.status}
           </span>
           {item.status === 'failed' && (
-            <button onClick={() => onRetry(item.id)} style={buttonStyle}>
-              Retry
+            <button title="Retry" onClick={() => onRetry(item.id)} style={buttonStyle}>
+              <RotateCcw size={14} />
+            </button>
+          )}
+          {item.status === 'complete' && item.outputFilePath && (
+            <button
+              title="Copy output path"
+              onClick={() => window.api.copyToClipboard(item.outputFilePath!)}
+              style={buttonStyle}
+            >
+              <Copy size={14} />
             </button>
           )}
           <button
+            title="Remove"
             onClick={() => onRemove(item.id)}
             style={{ ...buttonStyle, color: 'var(--color-error)' }}
           >
-            Remove
+            <Trash2 size={14} />
           </button>
         </div>
       </div>
@@ -118,10 +131,13 @@ const buttonStyle: React.CSSProperties = {
   background: 'none',
   border: '1px solid var(--color-border-input)',
   borderRadius: '4px',
-  padding: '2px 8px',
-  fontSize: '12px',
+  padding: '4px',
   cursor: 'pointer',
-  color: 'var(--color-text-secondary)'
+  color: 'var(--color-text-secondary)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  lineHeight: 0
 }
 
 export default QueueItem

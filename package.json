@@ -30,7 +30,8 @@
     "@electron-toolkit/utils": "^4.0.0",
     "chokidar": "^5.0.0",
     "electron-store": "^11.0.2",
-    "handbrake-js": "^7.1.0"
+    "handbrake-js": "^7.1.0",
+    "lucide-react": "^0.575.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",

@@ -26,6 +26,7 @@ interface QueueItem {
   error?: string
   addedAt: number
   completedAt?: number
+  outputFilePath?: string
 }
 
 interface DriftAPI {
@@ -51,6 +52,7 @@ interface DriftAPI {
   onAppError: (callback: (message: string) => void) => () => void
   onHandbrakeValid: (callback: () => void) => () => void
   setThemePreview: (theme: 'system' | 'light' | 'dark') => Promise<void>
+  copyToClipboard: (text: string) => Promise<void>
 }
 
 declare global {

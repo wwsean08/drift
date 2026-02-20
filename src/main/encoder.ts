@@ -7,7 +7,7 @@ import { ChildProcess } from 'child_process'
 
 interface EncodeCallbacks {
   onProgress: (id: string, percent: number, eta: string) => void
-  onComplete: (id: string) => void
+  onComplete: (id: string, outputPath: string) => void
   onError: (id: string, message: string) => void
 }
 
@@ -86,7 +86,7 @@ export function startEncode(
   process.on('complete', () => {
     activeJobs.delete(id)
     cleanupTemp()
-    callbacks.onComplete(id)
+    callbacks.onComplete(id, outputPath)
   })
 
   process.on('error', (err) => {
