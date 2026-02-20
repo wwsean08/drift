@@ -48,9 +48,9 @@ function App(): React.JSX.Element {
         <div
           style={{
             padding: '8px 16px',
-            backgroundColor: '#fef2f2',
-            borderBottom: '1px solid #fecaca',
-            color: '#991b1b',
+            backgroundColor: 'var(--color-error-bg)',
+            borderBottom: '1px solid var(--color-error-border)',
+            color: 'var(--color-error-text)',
             fontSize: '13px',
             display: 'flex',
             justifyContent: 'space-between',
@@ -64,7 +64,7 @@ function App(): React.JSX.Element {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: '#991b1b',
+              color: 'var(--color-error-text)',
               fontWeight: 'bold'
             }}
           >
@@ -76,8 +76,8 @@ function App(): React.JSX.Element {
       <div
         style={{
           display: 'flex',
-          borderBottom: '1px solid #e5e7eb',
-          backgroundColor: '#f9fafb'
+          borderBottom: '1px solid var(--color-border)',
+          backgroundColor: 'var(--color-bg-secondary)'
         }}
       >
         <TabButton
@@ -119,7 +119,7 @@ function App(): React.JSX.Element {
         >
           <div
             style={{
-              backgroundColor: '#fff',
+              backgroundColor: 'var(--color-bg)',
               borderRadius: '8px',
               padding: '24px',
               width: '360px',
@@ -130,10 +130,17 @@ function App(): React.JSX.Element {
             }}
           >
             <div>
-              <div style={{ fontSize: '16px', fontWeight: 600, color: '#111827', marginBottom: '6px' }}>
+              <div
+                style={{
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  color: 'var(--color-text-primary)',
+                  marginBottom: '6px'
+                }}
+              >
                 Unsaved Changes
               </div>
-              <div style={{ fontSize: '13px', color: '#6b7280' }}>
+              <div style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>
                 You have unsaved changes in Settings. What would you like to do?
               </div>
             </div>
@@ -147,7 +154,7 @@ function App(): React.JSX.Element {
                 }}
                 style={{
                   padding: '8px 16px',
-                  backgroundColor: '#3b82f6',
+                  backgroundColor: 'var(--color-accent)',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '6px',
@@ -163,12 +170,13 @@ function App(): React.JSX.Element {
                   setActiveTab(pendingTab!)
                   setShowUnsavedModal(false)
                   setPendingTab(null)
+                  window.api.getSettings().then((s) => window.api.setThemePreview(s.theme))
                 }}
                 style={{
                   padding: '8px 16px',
-                  backgroundColor: '#f9fafb',
-                  color: '#374151',
-                  border: '1px solid #d1d5db',
+                  backgroundColor: 'var(--color-bg-secondary)',
+                  color: 'var(--color-text-secondary)',
+                  border: '1px solid var(--color-border-input)',
                   borderRadius: '6px',
                   fontSize: '14px',
                   cursor: 'pointer'
@@ -184,7 +192,7 @@ function App(): React.JSX.Element {
                 style={{
                   padding: '8px 16px',
                   backgroundColor: 'transparent',
-                  color: '#6b7280',
+                  color: 'var(--color-text-tertiary)',
                   border: 'none',
                   borderRadius: '6px',
                   fontSize: '14px',
@@ -216,9 +224,9 @@ function TabButton({
       style={{
         padding: '10px 24px',
         border: 'none',
-        borderBottom: active ? '2px solid #3b82f6' : '2px solid transparent',
+        borderBottom: active ? '2px solid var(--color-accent)' : '2px solid transparent',
         backgroundColor: 'transparent',
-        color: active ? '#3b82f6' : '#6b7280',
+        color: active ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
         fontWeight: active ? 600 : 400,
         fontSize: '14px',
         cursor: 'pointer'

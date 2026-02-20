@@ -28,6 +28,7 @@ Download the CLI from the [HandBrake downloads page](https://handbrake.fr/downlo
 Download the CLI from the [HandBrake downloads page](https://handbrake.fr/downloads2.php) and either add it to your `PATH` or set the path in Drift's settings.
 
 #### Linux
+
 See the instructions for installing the CLI on Linux [here](https://handbrake.fr/docs/en/1.9.0/get-handbrake/download-and-install.html).
 
 ## Installation
@@ -40,8 +41,7 @@ Download the latest release for your platform from the [Releases](https://github
 
 2. **Open the Settings tab** and configure:
 
-    ![](/docs/settings.png)
-
+   ![](/docs/settings.png)
    - **Watch Directory** — the folder Drift will monitor for new video files
    - **Output Directory** — where encoded files will be saved
    - **HandBrakeCLI Path** — leave empty if `HandBrakeCLI` is already in your `PATH`, otherwise browse to the binary

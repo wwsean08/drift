@@ -8,8 +8,10 @@ interface AppSettings {
   videoExtensions: string[]
   queueExistingFiles: boolean
   handbrakeCliPath: string
+  paused: boolean
   customPresetPaths: string[]
   outputFormat: 'm4v' | 'mp4' | 'mkv' | 'webm'
+  theme: 'system' | 'light' | 'dark'
 }
 
 interface PresetEntry {
@@ -51,10 +53,6 @@ function SettingsView({
     onDirtyChange(isDirty)
   }, [isDirty])
 
-  useEffect(() => {
-    saveRef.current = handleSave
-  })
-
   const handleBrowse = async (field: 'watchDir' | 'outputDir'): Promise<void> => {
     const dir = await window.api.selectDirectory()
     if (dir && settings) {
@@ -74,8 +72,16 @@ function SettingsView({
     setTimeout(() => setSaved(false), 2000)
   }
 
+  useEffect(() => {
+    saveRef.current = handleSave
+  })
+
   if (!settings) {
-    return <div style={{ padding: '24px', color: '#6b7280' }}>Loading settings...</div>
+    return (
+      <div style={{ padding: '24px', color: 'var(--color-text-tertiary)' }}>
+        Loading settings...
+      </div>
+    )
   }
 
   return (
@@ -88,6 +94,22 @@ function SettingsView({
         maxWidth: '600px'
       }}
     >
+      <FieldGroup label="Theme">
+        <select
+          value={settings.theme ?? 'system'}
+          onChange={(e) => {
+            const v = e.target.value as 'system' | 'light' | 'dark'
+            setSettings({ ...settings, theme: v })
+            window.api.setThemePreview(v)
+          }}
+          style={{ ...inputStyle, flex: 'none', width: '180px' }}
+        >
+          <option value="system">System Default</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </FieldGroup>
+
       <FieldGroup label="Watch Directory">
         <div style={{ display: 'flex', gap: '8px' }}>
           <input
@@ -139,8 +161,8 @@ function SettingsView({
             Browse
           </button>
         </div>
-        <span style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>
-          Path to HandBrakeCLI binary. Leave empty if it's already in your PATH.
+        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+          Path to HandBrakeCLI binary. Leave empty if it&apos;s already in your PATH.
         </span>
       </FieldGroup>
 
@@ -182,7 +204,7 @@ function SettingsView({
                     alignItems: 'center',
                     gap: '6px',
                     fontSize: '12px',
-                    color: '#6b7280'
+                    color: 'var(--color-text-tertiary)'
                   }}
                 >
                   <span
@@ -209,7 +231,7 @@ function SettingsView({
                       background: 'none',
                       border: 'none',
                       cursor: 'pointer',
-                      color: '#9ca3af',
+                      color: 'var(--color-text-muted)',
                       fontSize: '14px',
                       padding: '0 2px',
                       lineHeight: 1
@@ -222,7 +244,7 @@ function SettingsView({
               ))}
             </div>
           )}
-          <span style={{ fontSize: '11px', color: '#9ca3af' }}>
+          <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
             Export presets from HandBrake GUI (Presets → Export) then import the JSON file here.
           </span>
         </div>
@@ -244,7 +266,7 @@ function SettingsView({
           <option value="mkv">mkv</option>
           <option value="webm">webm</option>
         </select>
-        <span style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>
+        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
           Output container format. Ensure your preset is compatible with the chosen format.
         </span>
       </FieldGroup>
@@ -280,7 +302,7 @@ function SettingsView({
           }
           style={inputStyle}
         />
-        <span style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>
+        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
           Comma-separated (e.g. .mp4, .mkv, .avi)
         </span>
       </FieldGroup>
@@ -292,7 +314,7 @@ function SettingsView({
             checked={settings.queueExistingFiles}
             onChange={(e) => setSettings({ ...settings, queueExistingFiles: e.target.checked })}
           />
-          <span style={{ fontSize: '13px', color: '#6b7280' }}>
+          <span style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>
             Queue files already in watch directory on startup
           </span>
         </label>
@@ -304,7 +326,7 @@ function SettingsView({
           disabled={saving}
           style={{
             padding: '8px 24px',
-            backgroundColor: '#3b82f6',
+            backgroundColor: 'var(--color-accent)',
             color: '#fff',
             border: 'none',
             borderRadius: '6px',
@@ -432,8 +454,8 @@ function PresetCombobox({
             right: 0,
             maxHeight: '240px',
             overflowY: 'auto',
-            backgroundColor: '#fff',
-            border: '1px solid #d1d5db',
+            backgroundColor: 'var(--color-bg)',
+            border: '1px solid var(--color-border-input)',
             borderRadius: '6px',
             marginTop: '4px',
             zIndex: 50,
@@ -448,10 +470,10 @@ function PresetCombobox({
                   padding: '6px 10px 2px',
                   fontSize: '11px',
                   fontWeight: 600,
-                  color: '#9ca3af',
+                  color: 'var(--color-text-muted)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
-                  borderTop: i > 0 ? '1px solid #f3f4f6' : undefined
+                  borderTop: i > 0 ? '1px solid var(--color-bg-tertiary)' : undefined
                 }}
               >
                 {item.label}
@@ -470,8 +492,9 @@ function PresetCombobox({
                   padding: '6px 10px 6px 20px',
                   fontSize: '13px',
                   cursor: 'pointer',
-                  backgroundColor: i === highlightedIndex ? '#eff6ff' : 'transparent',
-                  color: '#374151'
+                  backgroundColor:
+                    i === highlightedIndex ? 'var(--color-accent-bg)' : 'transparent',
+                  color: 'var(--color-text-secondary)'
                 }}
               >
                 {item.entry.name}
@@ -499,7 +522,9 @@ function FieldGroup({
 }): React.JSX.Element {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-      <label style={{ fontSize: '13px', fontWeight: 600, color: '#374151' }}>{label}</label>
+      <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+        {label}
+      </label>
       {children}
     </div>
   )
@@ -508,20 +533,22 @@ function FieldGroup({
 const inputStyle: React.CSSProperties = {
   flex: 1,
   padding: '6px 10px',
-  border: '1px solid #d1d5db',
+  border: '1px solid var(--color-border-input)',
   borderRadius: '6px',
   fontSize: '13px',
   outline: 'none',
-  backgroundColor: '#fff'
+  backgroundColor: 'var(--color-bg)',
+  color: 'var(--color-text-primary)'
 }
 
 const browseButtonStyle: React.CSSProperties = {
   padding: '6px 16px',
-  border: '1px solid #d1d5db',
+  border: '1px solid var(--color-border-input)',
   borderRadius: '6px',
   fontSize: '13px',
   cursor: 'pointer',
-  backgroundColor: '#f9fafb',
+  backgroundColor: 'var(--color-bg-secondary)',
+  color: 'var(--color-text-secondary)',
   whiteSpace: 'nowrap'
 }
 

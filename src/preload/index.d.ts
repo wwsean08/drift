@@ -8,8 +8,10 @@ interface AppSettings {
   videoExtensions: string[]
   queueExistingFiles: boolean
   handbrakeCliPath: string
+  paused: boolean
   customPresetPaths: string[]
   outputFormat: 'm4v' | 'mp4' | 'mkv' | 'webm'
+  theme: 'system' | 'light' | 'dark'
 }
 
 type QueueItemStatus = 'pending' | 'encoding' | 'complete' | 'failed'
@@ -48,6 +50,7 @@ interface DriftAPI {
   ) => () => void
   onAppError: (callback: (message: string) => void) => () => void
   onHandbrakeValid: (callback: () => void) => () => void
+  setThemePreview: (theme: 'system' | 'light' | 'dark') => Promise<void>
 }
 
 declare global {

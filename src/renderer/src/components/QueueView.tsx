@@ -7,7 +7,9 @@ function QueueView(): React.JSX.Element {
   const hasCompleted = queue.some((item) => item.status === 'complete')
 
   if (loading) {
-    return <div style={{ padding: '24px', color: '#6b7280' }}>Loading queue...</div>
+    return (
+      <div style={{ padding: '24px', color: 'var(--color-text-tertiary)' }}>Loading queue...</div>
+    )
   }
 
   return (
@@ -15,7 +17,7 @@ function QueueView(): React.JSX.Element {
       <div
         style={{
           padding: '12px 16px',
-          borderBottom: '1px solid #e5e7eb',
+          borderBottom: '1px solid var(--color-border)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center'
@@ -29,12 +31,12 @@ function QueueView(): React.JSX.Element {
             onClick={togglePause}
             style={{
               background: 'none',
-              border: '1px solid #d1d5db',
+              border: '1px solid var(--color-border-input)',
               borderRadius: '4px',
               padding: '4px 12px',
               fontSize: '12px',
               cursor: 'pointer',
-              color: '#374151'
+              color: 'var(--color-text-secondary)'
             }}
           >
             {paused ? 'Resume' : 'Pause'}
@@ -44,12 +46,12 @@ function QueueView(): React.JSX.Element {
               onClick={clearCompleted}
               style={{
                 background: 'none',
-                border: '1px solid #d1d5db',
+                border: '1px solid var(--color-border-input)',
                 borderRadius: '4px',
                 padding: '4px 12px',
                 fontSize: '12px',
                 cursor: 'pointer',
-                color: '#374151'
+                color: 'var(--color-text-secondary)'
               }}
             >
               Clear Completed
@@ -60,15 +62,17 @@ function QueueView(): React.JSX.Element {
 
       <div style={{ flex: 1, overflow: 'auto' }}>
         {queue.length === 0 ? (
-          <div style={{ padding: '48px 24px', textAlign: 'center', color: '#9ca3af' }}>
+          <div
+            style={{ padding: '48px 24px', textAlign: 'center', color: 'var(--color-text-muted)' }}
+          >
             <p style={{ fontSize: '14px' }}>No items in queue</p>
             <p style={{ fontSize: '12px', marginTop: '4px' }}>
               Configure a watch directory in Settings and drop video files in it
             </p>
           </div>
         ) : (
-          queue.map((item) => (
-            <QueueItem key={item.id} item={item} onRemove={removeItem} onRetry={retryItem} />
+          queue.map((item, i) => (
+            <QueueItem key={item.id} item={item} index={i} onRemove={removeItem} onRetry={retryItem} />
           ))
         )}
       </div>

@@ -9,26 +9,28 @@ interface QueueItemData {
 
 interface QueueItemProps {
   item: QueueItemData
+  index: number
   onRemove: (id: string) => void
   onRetry: (id: string) => void
 }
 
 const statusColors: Record<string, string> = {
-  pending: '#6b7280',
-  encoding: '#3b82f6',
-  complete: '#22c55e',
-  failed: '#ef4444'
+  pending: 'var(--color-text-tertiary)',
+  encoding: 'var(--color-accent)',
+  complete: 'var(--color-success)',
+  failed: 'var(--color-error)'
 }
 
-function QueueItem({ item, onRemove, onRetry }: QueueItemProps): React.JSX.Element {
+function QueueItem({ item, index, onRemove, onRetry }: QueueItemProps): React.JSX.Element {
   return (
     <div
       style={{
         padding: '12px 16px',
-        borderBottom: '1px solid #e5e7eb',
+        borderBottom: '1px solid var(--color-border)',
         display: 'flex',
         flexDirection: 'column',
-        gap: '6px'
+        gap: '6px',
+        backgroundColor: index % 2 === 0 ? 'var(--color-bg)' : 'var(--color-bg-secondary)'
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -62,7 +64,10 @@ function QueueItem({ item, onRemove, onRetry }: QueueItemProps): React.JSX.Eleme
               Retry
             </button>
           )}
-          <button onClick={() => onRemove(item.id)} style={{ ...buttonStyle, color: '#ef4444' }}>
+          <button
+            onClick={() => onRemove(item.id)}
+            style={{ ...buttonStyle, color: 'var(--color-error)' }}
+          >
             Remove
           </button>
         </div>
@@ -74,7 +79,7 @@ function QueueItem({ item, onRemove, onRetry }: QueueItemProps): React.JSX.Eleme
             style={{
               flex: 1,
               height: '6px',
-              backgroundColor: '#e5e7eb',
+              backgroundColor: 'var(--color-border)',
               borderRadius: '3px',
               overflow: 'hidden'
             }}
@@ -83,14 +88,19 @@ function QueueItem({ item, onRemove, onRetry }: QueueItemProps): React.JSX.Eleme
               style={{
                 width: `${item.progress}%`,
                 height: '100%',
-                backgroundColor: '#3b82f6',
+                backgroundColor: 'var(--color-accent)',
                 borderRadius: '3px',
                 transition: 'width 0.3s ease'
               }}
             />
           </div>
           <span
-            style={{ fontSize: '12px', color: '#6b7280', minWidth: '80px', textAlign: 'right' }}
+            style={{
+              fontSize: '12px',
+              color: 'var(--color-text-tertiary)',
+              minWidth: '80px',
+              textAlign: 'right'
+            }}
           >
             {Math.round(item.progress)}%{item.eta ? ` - ${item.eta}` : ''}
           </span>
@@ -98,7 +108,7 @@ function QueueItem({ item, onRemove, onRetry }: QueueItemProps): React.JSX.Eleme
       )}
 
       {item.status === 'failed' && item.error && (
-        <span style={{ fontSize: '12px', color: '#ef4444' }}>{item.error}</span>
+        <span style={{ fontSize: '12px', color: 'var(--color-error)' }}>{item.error}</span>
       )}
     </div>
   )
@@ -106,12 +116,12 @@ function QueueItem({ item, onRemove, onRetry }: QueueItemProps): React.JSX.Eleme
 
 const buttonStyle: React.CSSProperties = {
   background: 'none',
-  border: '1px solid #d1d5db',
+  border: '1px solid var(--color-border-input)',
   borderRadius: '4px',
   padding: '2px 8px',
   fontSize: '12px',
   cursor: 'pointer',
-  color: '#374151'
+  color: 'var(--color-text-secondary)'
 }
 
 export default QueueItem

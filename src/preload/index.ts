@@ -49,7 +49,10 @@ const api = {
     const handler = (): void => callback()
     ipcRenderer.on('app:handbrake-valid', handler)
     return () => ipcRenderer.removeListener('app:handbrake-valid', handler)
-  }
+  },
+
+  setThemePreview: (theme: 'system' | 'light' | 'dark') =>
+    ipcRenderer.invoke('theme:setPreview', theme)
 }
 
 if (process.contextIsolated) {

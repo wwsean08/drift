@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, nativeTheme } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -54,6 +54,8 @@ app.whenReady().then(async () => {
   })
 
   recoverFromCrash()
+
+  nativeTheme.themeSource = getSettings().theme ?? 'system'
 
   const mainWindow = createWindow()
   registerIpcHandlers(mainWindow)

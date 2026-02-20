@@ -1,4 +1,4 @@
-import { ipcMain, dialog, BrowserWindow, app } from 'electron'
+import { ipcMain, dialog, BrowserWindow, app, nativeTheme } from 'electron'
 import { exec, execFile } from 'child_process'
 import { readFileSync } from 'fs'
 import { getSettings, saveSettings, getQueue, AppSettings } from './store'
@@ -96,7 +96,13 @@ export function registerIpcHandlers(win: BrowserWindow): void {
       }
     }
 
+    nativeTheme.themeSource = settings.theme ?? 'system'
+
     return true
+  })
+
+  ipcMain.handle('theme:setPreview', (_event, theme: 'system' | 'light' | 'dark') => {
+    nativeTheme.themeSource = theme
   })
 
   ipcMain.handle('dialog:selectDirectory', async () => {
@@ -197,15 +203,12 @@ export function registerIpcHandlers(win: BrowserWindow): void {
     return getCustomPresets()
   })
 
-  ipcMain.handle(
-    'presets:removeCustom',
-    (_event, filePath: string): PresetEntry[] => {
-      const settings = getSettings()
-      saveSettings({
-        ...settings,
-        customPresetPaths: (settings.customPresetPaths || []).filter((p) => p !== filePath)
-      })
-      return getCustomPresets()
-    }
-  )
+  ipcMain.handle('presets:removeCustom', (_event, filePath: string): PresetEntry[] => {
+    const settings = getSettings()
+    saveSettings({
+      ...settings,
+      customPresetPaths: (settings.customPresetPaths || []).filter((p) => p !== filePath)
+    })
+    return getCustomPresets()
+  })
 }
