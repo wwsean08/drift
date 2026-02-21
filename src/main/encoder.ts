@@ -79,17 +79,21 @@ export function startEncode(
 
   activeJobs.set(id, process)
 
+  let errored = false
+
   process.on('progress', (progress) => {
     callbacks.onProgress(id, progress.percentComplete, progress.eta || '')
   })
 
   process.on('complete', () => {
+    if (errored) return
     activeJobs.delete(id)
     cleanupTemp()
     callbacks.onComplete(id, outputPath)
   })
 
   process.on('error', (err) => {
+    errored = true
     activeJobs.delete(id)
     cleanupTemp()
     callbacks.onError(id, err?.message || 'Unknown encoding error')
