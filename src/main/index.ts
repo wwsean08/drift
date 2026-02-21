@@ -1,7 +1,8 @@
 import { app, shell, BrowserWindow, nativeTheme } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import { autoUpdater } from 'electron-updater'
+import electronUpdater from 'electron-updater'
+const { autoUpdater } = electronUpdater
 import icon from '../../resources/icon.png?asset'
 import { registerIpcHandlers, checkHandBrakeCLI } from './ipc'
 import { recoverFromCrash, processQueue, setMainWindow } from './queue'
@@ -91,8 +92,8 @@ app.whenReady().then(async () => {
     mainWindow.focus()
   })
 
-  if (process.platform === 'win32' || process.env['APPIMAGE']) {
-    autoUpdater.checkForUpdatesAndNotify()
+  if (process.platform === 'win32' || (process.platform === 'linux' && process.env['APPIMAGE'])) {
+    autoUpdater.checkForUpdatesAndNotify().catch(console.error)
   }
 })
 
