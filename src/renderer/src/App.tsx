@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import QueueView from './components/QueueView'
 import SettingsView from './components/SettingsView'
 import AboutView from './components/AboutView'
@@ -25,6 +25,8 @@ function App(): React.JSX.Element {
       cleanupHandbrake()
     }
   }, [])
+
+  const handleDirtyChange = useCallback((d: boolean) => setSettingsDirty(d), [])
 
   const handleTabChange = (tab: Tab): void => {
     if (activeTab === 'settings' && settingsDirty && tab !== 'settings') {
@@ -100,7 +102,7 @@ function App(): React.JSX.Element {
       <div style={{ flex: 1, overflow: 'auto' }}>
         {activeTab === 'queue' && <QueueView />}
         {activeTab === 'settings' && (
-          <SettingsView onDirtyChange={(d) => setSettingsDirty(d)} saveRef={saveRef} />
+          <SettingsView onDirtyChange={handleDirtyChange} saveRef={saveRef} />
         )}
         {activeTab === 'about' && <AboutView />}
       </div>

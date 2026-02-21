@@ -51,7 +51,7 @@ function SettingsView({
 
   useEffect(() => {
     onDirtyChange(isDirty)
-  }, [isDirty])
+  }, [isDirty, onDirtyChange])
 
   const handleBrowse = async (field: 'watchDir' | 'outputDir'): Promise<void> => {
     const dir = await window.api.selectDirectory()
@@ -427,7 +427,7 @@ function PresetCombobox({
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [])
+  }, [containerRef, setOpen])
 
   return (
     <div ref={containerRef} style={{ position: 'relative' }}>

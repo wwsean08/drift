@@ -1,5 +1,6 @@
 import { execSync } from 'child_process'
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async function afterPack(context) {
   if (context.electronPlatformName !== 'darwin') return
 

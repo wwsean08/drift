@@ -72,7 +72,13 @@ function QueueView(): React.JSX.Element {
           </div>
         ) : (
           queue.map((item, i) => (
-            <QueueItem key={item.id} item={item} index={i} onRemove={removeItem} onRetry={retryItem} />
+            <QueueItem
+              key={item.id}
+              item={item}
+              index={i}
+              onRemove={removeItem}
+              onRetry={retryItem}
+            />
           ))
         )}
       </div>
