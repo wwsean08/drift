@@ -30,6 +30,7 @@
     "@electron-toolkit/utils": "^4.0.0",
     "chokidar": "^5.0.0",
     "electron-store": "^11.0.2",
+    "electron-updater": "^6.8.3",
     "handbrake-js": "^7.1.0",
     "lucide-react": "^0.575.0"
   },
