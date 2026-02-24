@@ -1,10 +1,101 @@
+import { useState } from 'react'
 import { useQueue } from '../hooks/useIpc'
 import QueueItem from './QueueItem'
 
 function QueueView(): React.JSX.Element {
-  const { queue, loading, paused, removeItem, retryItem, clearCompleted, togglePause } = useQueue()
+  const {
+    queue,
+    loading,
+    paused,
+    removeItem,
+    retryItem,
+    clearCompleted,
+    togglePause,
+    reorderQueue
+  } = useQueue()
+
+  const [isEditingOrder, setIsEditingOrder] = useState(false)
+  const [editOrder, setEditOrder] = useState<string[] | null>(null)
+  const [prePausedState, setPrePausedState] = useState(false)
+  const [draggedId, setDraggedId] = useState<string | null>(null)
+  const [dropTarget, setDropTarget] = useState<{ id: string; position: 'above' | 'below' } | null>(
+    null
+  )
+
+  const displayQueue =
+    isEditingOrder && editOrder !== null
+      ? [
+          ...(editOrder
+            .map((id) => queue.find((item) => item.id === id))
+            .filter(Boolean) as typeof queue),
+          ...queue.filter((item) => !editOrder.includes(item.id))
+        ]
+      : queue
 
   const hasCompleted = queue.some((item) => item.status === 'complete')
+
+  const enterEditMode = (): void => {
+    setPrePausedState(paused)
+    setEditOrder(queue.map((item) => item.id))
+    setIsEditingOrder(true)
+    if (!paused) togglePause()
+  }
+
+  const saveOrder = async (): Promise<void> => {
+    if (editOrder) await reorderQueue(editOrder)
+    setIsEditingOrder(false)
+    setEditOrder(null)
+    setDraggedId(null)
+    setDropTarget(null)
+    if (!prePausedState) togglePause()
+  }
+
+  const cancelEditOrder = (): void => {
+    setIsEditingOrder(false)
+    setEditOrder(null)
+    setDraggedId(null)
+    setDropTarget(null)
+    if (!prePausedState) togglePause()
+  }
+
+  const handleDragStart = (id: string): void => setDraggedId(id)
+  const handleDragEnd = (): void => {
+    setDraggedId(null)
+    setDropTarget(null)
+  }
+
+  const handleDragOver = (e: React.DragEvent, id: string): void => {
+    e.preventDefault()
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    setDropTarget({ id, position: e.clientY < rect.top + rect.height / 2 ? 'above' : 'below' })
+  }
+
+  const handleDragLeave = (): void => setDropTarget(null)
+
+  const handleDrop = (e: React.DragEvent, targetId: string): void => {
+    e.preventDefault()
+    const sourceId = e.dataTransfer.getData('text/plain')
+    setDraggedId(null)
+    setDropTarget(null)
+    if (!sourceId || sourceId === targetId || !editOrder) return
+
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    const dropAbove = e.clientY < rect.top + rect.height / 2
+    const filtered = editOrder.filter((id) => id !== sourceId)
+    const targetIndex = filtered.indexOf(targetId)
+    filtered.splice(dropAbove ? targetIndex : targetIndex + 1, 0, sourceId)
+    setEditOrder(filtered)
+  }
+
+  const buttonStyle: React.CSSProperties = {
+    background: 'none',
+    border: '1px solid var(--color-border-input)',
+    borderRadius: '4px',
+    padding: '4px 12px',
+    fontSize: '12px',
+    cursor: 'pointer',
+    color: 'var(--color-text-secondary)'
+  }
 
   if (loading) {
     return (
@@ -27,35 +118,29 @@ function QueueView(): React.JSX.Element {
           Queue ({queue.length} item{queue.length !== 1 ? 's' : ''})
         </span>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            onClick={togglePause}
-            style={{
-              background: 'none',
-              border: '1px solid var(--color-border-input)',
-              borderRadius: '4px',
-              padding: '4px 12px',
-              fontSize: '12px',
-              cursor: 'pointer',
-              color: 'var(--color-text-secondary)'
-            }}
-          >
-            {paused ? 'Resume' : 'Pause'}
-          </button>
-          {hasCompleted && (
-            <button
-              onClick={clearCompleted}
-              style={{
-                background: 'none',
-                border: '1px solid var(--color-border-input)',
-                borderRadius: '4px',
-                padding: '4px 12px',
-                fontSize: '12px',
-                cursor: 'pointer',
-                color: 'var(--color-text-secondary)'
-              }}
-            >
-              Clear Completed
-            </button>
+          {isEditingOrder ? (
+            <>
+              <button onClick={saveOrder} style={buttonStyle}>
+                Save Order
+              </button>
+              <button onClick={cancelEditOrder} style={buttonStyle}>
+                Cancel
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={enterEditMode} style={buttonStyle}>
+                Edit Order
+              </button>
+              <button onClick={togglePause} style={buttonStyle}>
+                {paused ? 'Resume' : 'Pause'}
+              </button>
+              {hasCompleted && (
+                <button onClick={clearCompleted} style={buttonStyle}>
+                  Clear Completed
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -71,13 +156,21 @@ function QueueView(): React.JSX.Element {
             </p>
           </div>
         ) : (
-          queue.map((item, i) => (
+          displayQueue.map((item, i) => (
             <QueueItem
               key={item.id}
               item={item}
               index={i}
               onRemove={removeItem}
               onRetry={retryItem}
+              isEditingOrder={isEditingOrder}
+              isDragging={draggedId === item.id}
+              dropIndicator={dropTarget?.id === item.id ? dropTarget.position : null}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
             />
           ))
         )}

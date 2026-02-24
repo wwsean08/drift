@@ -12,6 +12,7 @@ const api = {
   removeItem: (id: string) => ipcRenderer.invoke('queue:remove', id),
   retryItem: (id: string) => ipcRenderer.invoke('queue:retry', id),
   clearCompleted: () => ipcRenderer.invoke('queue:clearCompleted'),
+  reorderQueue: (ids: string[]) => ipcRenderer.invoke('queue:reorder', ids),
   getPaused: () => ipcRenderer.invoke('queue:getPaused'),
   setPaused: (paused: boolean) => ipcRenderer.invoke('queue:setPaused', paused),
   getPresets: () => ipcRenderer.invoke('presets:get'),

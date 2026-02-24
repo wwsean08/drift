@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Copy, Trash2, RotateCcw, ChevronRight, ChevronDown } from 'lucide-react'
+import { Copy, Trash2, RotateCcw, ChevronRight, ChevronDown, GripVertical } from 'lucide-react'
 
 interface MediaInfo {
   width: number
@@ -27,6 +27,14 @@ interface QueueItemProps {
   index: number
   onRemove: (id: string) => void
   onRetry: (id: string) => void
+  isEditingOrder: boolean
+  isDragging: boolean
+  dropIndicator: 'above' | 'below' | null
+  onDragStart: (id: string) => void
+  onDragEnd: () => void
+  onDragOver: (e: React.DragEvent, id: string) => void
+  onDragLeave: () => void
+  onDrop: (e: React.DragEvent, id: string) => void
 }
 
 const statusColors: Record<string, string> = {
@@ -42,21 +50,69 @@ function formatFileSize(bytes: number): string {
   return `${Math.round(bytes / 1_000)} KB`
 }
 
-function QueueItem({ item, index, onRemove, onRetry }: QueueItemProps): React.JSX.Element {
+function QueueItem({
+  item,
+  index,
+  onRemove,
+  onRetry,
+  isEditingOrder,
+  isDragging,
+  dropIndicator,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDragLeave,
+  onDrop
+}: QueueItemProps): React.JSX.Element {
   const [expanded, setExpanded] = useState(false)
+
+  const canDrag = isEditingOrder && item.status === 'pending'
 
   return (
     <div
+      draggable={canDrag}
+      onDragStart={
+        canDrag
+          ? (e) => {
+              e.dataTransfer.setData('text/plain', item.id)
+              onDragStart(item.id)
+            }
+          : undefined
+      }
+      onDragEnd={canDrag ? onDragEnd : undefined}
+      onDragOver={(e) => onDragOver(e, item.id)}
+      onDragLeave={onDragLeave}
+      onDrop={(e) => onDrop(e, item.id)}
       style={{
         padding: '12px 16px',
-        borderBottom: '1px solid var(--color-border)',
+        borderTop: dropIndicator === 'above' ? '2px solid var(--color-accent)' : undefined,
+        borderBottom:
+          dropIndicator === 'below'
+            ? '2px solid var(--color-accent)'
+            : '1px solid var(--color-border)',
         display: 'flex',
         flexDirection: 'column',
         gap: '6px',
-        backgroundColor: index % 2 === 0 ? 'var(--color-bg)' : 'var(--color-bg-secondary)'
+        backgroundColor: index % 2 === 0 ? 'var(--color-bg)' : 'var(--color-bg-secondary)',
+        opacity: isDragging ? 0.4 : 1,
+        cursor: canDrag ? 'grab' : 'default',
+        transition: 'opacity 0.15s ease'
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {canDrag && (
+          <div
+            style={{
+              marginRight: '8px',
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              color: 'var(--color-text-tertiary)'
+            }}
+          >
+            <GripVertical size={16} />
+          </div>
+        )}
         <span
           style={{
             fontWeight: 500,

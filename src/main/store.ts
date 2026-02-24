@@ -100,3 +100,12 @@ export function clearCompletedItems(): void {
   const queue = getQueue().filter((item) => item.status !== 'complete')
   store.set('queue', queue)
 }
+
+export function reorderQueueItems(ids: string[]): void {
+  const queue = getQueue()
+  const itemMap = new Map(queue.map((item) => [item.id, item]))
+  const reordered = ids.map((id) => itemMap.get(id)).filter((item): item is QueueItem => !!item)
+  const idSet = new Set(ids)
+  const extras = queue.filter((item) => !idSet.has(item.id))
+  store.set('queue', [...reordered, ...extras])
+}

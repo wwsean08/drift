@@ -6,6 +6,7 @@ import {
   updateQueueItem,
   removeQueueItem,
   clearCompletedItems,
+  reorderQueueItems,
   QueueItem
 } from './store'
 import { startEncode, cancelEncode, getActiveJobCount, scanFile } from './encoder'
@@ -127,4 +128,23 @@ export function handleClearCompleted(): void {
   clearCompletedItems()
   sendToRenderer('queue:updated', getQueue())
   rebuildTrayMenu()
+}
+
+export function handleReorderItems(ids: string[]): void {
+  const queue = getQueue()
+
+  // Safety: encoding items must not change relative order
+  const encodingIds = queue.filter((item) => item.status === 'encoding').map((item) => item.id)
+  const incomingEncoding = ids.filter((id) => encodingIds.includes(id))
+  let cursor = 0
+  for (const id of incomingEncoding) {
+    if (encodingIds[cursor] !== id) {
+      sendToRenderer('queue:updated', queue)
+      return
+    }
+    cursor++
+  }
+
+  reorderQueueItems(ids)
+  sendToRenderer('queue:updated', getQueue())
 }

@@ -8,7 +8,8 @@ import {
   setPaused,
   handleRemoveItem,
   handleRetryItem,
-  handleClearCompleted
+  handleClearCompleted,
+  handleReorderItems
 } from './queue'
 
 interface PresetEntry {
@@ -158,6 +159,11 @@ export function registerIpcHandlers(win: BrowserWindow): void {
 
   ipcMain.handle('queue:clearCompleted', () => {
     handleClearCompleted()
+    return true
+  })
+
+  ipcMain.handle('queue:reorder', (_event, ids: string[]) => {
+    handleReorderItems(ids)
     return true
   })
 

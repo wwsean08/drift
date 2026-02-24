@@ -20,6 +20,7 @@ export function useQueue(): {
   retryItem: (id: string) => Promise<void>
   clearCompleted: () => Promise<void>
   togglePause: () => Promise<void>
+  reorderQueue: (ids: string[]) => Promise<void>
 } {
   const [queue, setQueue] = useState<QueueItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -68,5 +69,18 @@ export function useQueue(): {
     setPaused(newPaused)
   }, [paused])
 
-  return { queue, loading, paused, removeItem, retryItem, clearCompleted, togglePause }
+  const reorderQueue = useCallback(async (ids: string[]) => {
+    await window.api.reorderQueue(ids)
+  }, [])
+
+  return {
+    queue,
+    loading,
+    paused,
+    removeItem,
+    retryItem,
+    clearCompleted,
+    togglePause,
+    reorderQueue
+  }
 }

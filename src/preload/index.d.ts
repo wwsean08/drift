@@ -50,6 +50,7 @@ interface DriftAPI {
   removeItem: (id: string) => Promise<boolean>
   retryItem: (id: string) => Promise<boolean>
   clearCompleted: () => Promise<boolean>
+  reorderQueue: (ids: string[]) => Promise<boolean>
   getPaused: () => Promise<boolean>
   setPaused: (paused: boolean) => Promise<boolean>
   getPresets: () => Promise<Array<{ category: string; name: string }>>
