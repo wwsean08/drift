@@ -16,6 +16,16 @@ export interface AppSettings {
 
 export type QueueItemStatus = 'pending' | 'encoding' | 'complete' | 'failed'
 
+export interface MediaInfo {
+  width: number
+  height: number
+  duration: string
+  videoCodec: string
+  audioTracks: string[]
+  subtitleCount: number
+  fileSize: number
+}
+
 export interface QueueItem {
   id: string
   filePath: string
@@ -27,6 +37,7 @@ export interface QueueItem {
   addedAt: number
   completedAt?: number
   outputFilePath?: string
+  mediaInfo?: MediaInfo | null
 }
 
 export interface StoreSchema {

@@ -1,4 +1,15 @@
-import { Copy, Trash2, RotateCcw } from 'lucide-react'
+import { useState } from 'react'
+import { Copy, Trash2, RotateCcw, ChevronRight, ChevronDown } from 'lucide-react'
+
+interface MediaInfo {
+  width: number
+  height: number
+  duration: string
+  videoCodec: string
+  audioTracks: string[]
+  subtitleCount: number
+  fileSize: number
+}
 
 interface QueueItemData {
   id: string
@@ -8,6 +19,7 @@ interface QueueItemData {
   eta: string
   error?: string
   outputFilePath?: string
+  mediaInfo?: MediaInfo | null
 }
 
 interface QueueItemProps {
@@ -24,7 +36,15 @@ const statusColors: Record<string, string> = {
   failed: 'var(--color-error)'
 }
 
+function formatFileSize(bytes: number): string {
+  if (bytes >= 1_000_000_000) return `${(bytes / 1_000_000_000).toFixed(1)} GB`
+  if (bytes >= 1_000_000) return `${Math.round(bytes / 1_000_000)} MB`
+  return `${Math.round(bytes / 1_000)} KB`
+}
+
 function QueueItem({ item, index, onRemove, onRetry }: QueueItemProps): React.JSX.Element {
+  const [expanded, setExpanded] = useState(false)
+
   return (
     <div
       style={{
@@ -85,6 +105,45 @@ function QueueItem({ item, index, onRemove, onRetry }: QueueItemProps): React.JS
           </button>
         </div>
       </div>
+
+      {item.mediaInfo === undefined &&
+        (item.status === 'pending' || item.status === 'encoding') && (
+          <span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>Scanning…</span>
+        )}
+
+      {item.mediaInfo != null && (
+        <div
+          style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}
+          onClick={() => setExpanded(!expanded)}
+        >
+          <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+            {item.mediaInfo.width}×{item.mediaInfo.height} · {item.mediaInfo.duration}
+            {item.mediaInfo.videoCodec ? ` · ${item.mediaInfo.videoCodec}` : ''}
+          </span>
+          {expanded ? (
+            <ChevronDown
+              size={14}
+              style={{ marginLeft: '4px', color: 'var(--color-text-tertiary)', flexShrink: 0 }}
+            />
+          ) : (
+            <ChevronRight
+              size={14}
+              style={{ marginLeft: '4px', color: 'var(--color-text-tertiary)', flexShrink: 0 }}
+            />
+          )}
+        </div>
+      )}
+
+      {expanded && item.mediaInfo != null && (
+        <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+          {'Audio: '}
+          {item.mediaInfo.audioTracks.length > 0 ? item.mediaInfo.audioTracks.join(' · ') : '—'}
+          {'   Subtitles: '}
+          {item.mediaInfo.subtitleCount}
+          {'   Size: '}
+          {formatFileSize(item.mediaInfo.fileSize)}
+        </span>
+      )}
 
       {item.status === 'encoding' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

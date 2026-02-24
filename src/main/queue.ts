@@ -5,9 +5,10 @@ import {
   getQueue,
   updateQueueItem,
   removeQueueItem,
-  clearCompletedItems
+  clearCompletedItems,
+  QueueItem
 } from './store'
-import { startEncode, cancelEncode, getActiveJobCount } from './encoder'
+import { startEncode, cancelEncode, getActiveJobCount, scanFile } from './encoder'
 import { rebuildTrayMenu } from './tray'
 
 let mainWindow: BrowserWindow | null = null
@@ -86,6 +87,17 @@ export function processQueue(): void {
       settings.outputFormat || 'm4v'
     )
   }
+}
+
+export function handleNewQueueItem(item: QueueItem): void {
+  sendToRenderer('queue:updated', getQueue())
+  processQueue()
+
+  const settings = getSettings()
+  scanFile(item.filePath, settings.handbrakeCliPath || undefined).then((mediaInfo) => {
+    updateQueueItem(item.id, { mediaInfo: mediaInfo ?? null })
+    sendToRenderer('queue:updated', getQueue())
+  })
 }
 
 export function recoverFromCrash(): void {

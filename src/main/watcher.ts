@@ -3,9 +3,9 @@ import path from 'path'
 import { getSettings, getQueue, addQueueItem, QueueItem } from './store'
 
 let watcher: FSWatcher | null = null
-let onFileAdded: (() => void) | null = null
+let onFileAdded: ((item: QueueItem) => void) | null = null
 
-export function setOnFileAdded(callback: () => void): void {
+export function setOnFileAdded(callback: (item: QueueItem) => void): void {
   onFileAdded = callback
 }
 
@@ -45,7 +45,7 @@ export function startWatcher(): void {
     addQueueItem(item)
 
     if (onFileAdded) {
-      onFileAdded()
+      onFileAdded(item)
     }
   })
 }

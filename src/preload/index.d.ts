@@ -16,6 +16,16 @@ interface AppSettings {
 
 type QueueItemStatus = 'pending' | 'encoding' | 'complete' | 'failed'
 
+interface MediaInfo {
+  width: number
+  height: number
+  duration: string
+  videoCodec: string
+  audioTracks: string[]
+  subtitleCount: number
+  fileSize: number
+}
+
 interface QueueItem {
   id: string
   filePath: string
@@ -27,6 +37,7 @@ interface QueueItem {
   addedAt: number
   completedAt?: number
   outputFilePath?: string
+  mediaInfo?: MediaInfo | null
 }
 
 interface DriftAPI {

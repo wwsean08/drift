@@ -5,10 +5,10 @@ import electronUpdater from 'electron-updater'
 const { autoUpdater } = electronUpdater
 import icon from '../../resources/icon.png?asset'
 import { registerIpcHandlers, checkHandBrakeCLI } from './ipc'
-import { recoverFromCrash, processQueue, setMainWindow } from './queue'
+import { recoverFromCrash, processQueue, setMainWindow, handleNewQueueItem } from './queue'
 import { createTray, getIsQuitting } from './tray'
 import { startWatcher, setOnFileAdded } from './watcher'
-import { getSettings, getQueue } from './store'
+import { getSettings } from './store'
 
 function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
@@ -65,9 +65,8 @@ app.whenReady().then(async () => {
 
   createTray(mainWindow)
 
-  setOnFileAdded(() => {
-    mainWindow.webContents.send('queue:updated', getQueue())
-    processQueue()
+  setOnFileAdded((item) => {
+    handleNewQueueItem(item)
   })
 
   const settings = getSettings()
