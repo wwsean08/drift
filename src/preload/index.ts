@@ -56,7 +56,9 @@ const api = {
   setThemePreview: (theme: 'system' | 'light' | 'dark') =>
     ipcRenderer.invoke('theme:setPreview', theme),
 
-  copyToClipboard: (text: string) => ipcRenderer.invoke('clipboard:write', text)
+  copyToClipboard: (text: string) => ipcRenderer.invoke('clipboard:write', text),
+
+  platform: process.platform
 }
 
 if (process.contextIsolated) {

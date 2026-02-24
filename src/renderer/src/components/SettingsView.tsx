@@ -237,6 +237,7 @@ function SettingsView({
                       lineHeight: 1
                     }}
                     title="Remove custom preset file"
+                    data-tooltip="Remove custom preset file"
                   >
                     ×
                   </button>

@@ -66,6 +66,7 @@ interface DriftAPI {
   onHandbrakeValid: (callback: () => void) => () => void
   setThemePreview: (theme: 'system' | 'light' | 'dark') => Promise<void>
   copyToClipboard: (text: string) => Promise<void>
+  platform: string
 }
 
 declare global {

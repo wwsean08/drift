@@ -62,6 +62,8 @@ function App(): React.JSX.Element {
           <span>{appError}</span>
           <button
             onClick={() => setAppError(null)}
+            title="Dismiss"
+            data-tooltip="Dismiss"
             style={{
               background: 'none',
               border: 'none',

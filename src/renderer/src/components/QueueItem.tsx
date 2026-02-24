@@ -175,13 +175,14 @@ function QueueItem({
                 {item.status}
               </span>
               {(item.status === 'failed' || item.status === 'cancelled') && (
-                <button title="Retry" onClick={() => onRetry(item.id)} style={buttonStyle}>
+                <button title="Retry" data-tooltip="Retry" onClick={() => onRetry(item.id)} style={buttonStyle}>
                   <RotateCcw size={14} />
                 </button>
               )}
               {item.status === 'complete' && item.outputFilePath && (
                 <button
                   title="Copy output path"
+                  data-tooltip="Copy output path"
                   onClick={() => window.api.copyToClipboard(item.outputFilePath!)}
                   style={buttonStyle}
                 >
@@ -191,6 +192,7 @@ function QueueItem({
               {item.status === 'encoding' && (
                 <button
                   title="Cancel"
+                  data-tooltip="Cancel"
                   onClick={() => setPendingAction('cancel')}
                   style={{ ...buttonStyle, color: 'var(--color-error)' }}
                 >
@@ -199,6 +201,7 @@ function QueueItem({
               )}
               <button
                 title="Remove"
+                data-tooltip="Remove"
                 onClick={() =>
                   item.status === 'complete' ? onRemove(item.id) : setPendingAction('remove')
                 }
