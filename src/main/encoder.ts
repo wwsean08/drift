@@ -3,7 +3,7 @@ import path from 'path'
 import fs from 'fs'
 import os from 'os'
 import crypto from 'crypto'
-import { ChildProcess, execFile } from 'child_process'
+import { execFile } from 'child_process'
 import { MediaInfo } from './store'
 
 interface EncodeCallbacks {
@@ -12,8 +12,13 @@ interface EncodeCallbacks {
   onError: (id: string, message: string) => void
 }
 
-const activeJobs = new Map<string, ChildProcess>()
+interface HandbrakeProcess {
+  cancel(): void
+}
+
+const activeJobs = new Map<string, HandbrakeProcess>()
 const tempFiles = new Map<string, string>()
+const canceledIds = new Set<string>()
 
 function buildMergedPresetFile(customPresetPaths: string[]): string | null {
   const allPresets: unknown[] = []
@@ -97,14 +102,18 @@ export function startEncode(
     errored = true
     activeJobs.delete(id)
     cleanupTemp()
-    callbacks.onError(id, err?.message || 'Unknown encoding error')
+    if (!canceledIds.has(id)) {
+      callbacks.onError(id, err?.message || 'Unknown encoding error')
+    }
+    canceledIds.delete(id)
   })
 }
 
 export function cancelEncode(id: string): void {
   const process = activeJobs.get(id)
   if (process) {
-    process.kill()
+    canceledIds.add(id)
+    process.cancel()
     activeJobs.delete(id)
   }
 }

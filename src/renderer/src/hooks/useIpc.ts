@@ -4,7 +4,7 @@ interface QueueItem {
   id: string
   filePath: string
   fileName: string
-  status: 'pending' | 'encoding' | 'complete' | 'failed'
+  status: 'pending' | 'encoding' | 'complete' | 'failed' | 'cancelled'
   progress: number
   eta: string
   error?: string
@@ -18,6 +18,7 @@ export function useQueue(): {
   paused: boolean
   removeItem: (id: string) => Promise<void>
   retryItem: (id: string) => Promise<void>
+  cancelItem: (id: string) => Promise<void>
   clearCompleted: () => Promise<void>
   togglePause: () => Promise<void>
   reorderQueue: (ids: string[]) => Promise<void>
@@ -60,6 +61,10 @@ export function useQueue(): {
     await window.api.retryItem(id)
   }, [])
 
+  const cancelItem = useCallback(async (id: string) => {
+    await window.api.cancelItem(id)
+  }, [])
+
   const clearCompleted = useCallback(async () => {
     await window.api.clearCompleted()
   }, [])
@@ -79,6 +84,7 @@ export function useQueue(): {
     paused,
     removeItem,
     retryItem,
+    cancelItem,
     clearCompleted,
     togglePause,
     reorderQueue

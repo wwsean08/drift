@@ -8,6 +8,7 @@ import {
   setPaused,
   handleRemoveItem,
   handleRetryItem,
+  handleCancelItem,
   handleClearCompleted,
   handleReorderItems
 } from './queue'
@@ -145,6 +146,11 @@ export function registerIpcHandlers(win: BrowserWindow): void {
 
   ipcMain.handle('queue:retry', (_event, id: string) => {
     handleRetryItem(id)
+    return true
+  })
+
+  ipcMain.handle('queue:cancel', (_event, id: string) => {
+    handleCancelItem(id)
     return true
   })
 

@@ -14,7 +14,7 @@ interface AppSettings {
   theme: 'system' | 'light' | 'dark'
 }
 
-type QueueItemStatus = 'pending' | 'encoding' | 'complete' | 'failed'
+type QueueItemStatus = 'pending' | 'encoding' | 'complete' | 'failed' | 'cancelled'
 
 interface MediaInfo {
   width: number
@@ -49,6 +49,7 @@ interface DriftAPI {
   getQueue: () => Promise<QueueItem[]>
   removeItem: (id: string) => Promise<boolean>
   retryItem: (id: string) => Promise<boolean>
+  cancelItem: (id: string) => Promise<boolean>
   clearCompleted: () => Promise<boolean>
   reorderQueue: (ids: string[]) => Promise<boolean>
   getPaused: () => Promise<boolean>

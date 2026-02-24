@@ -1,5 +1,13 @@
 import { useState } from 'react'
-import { Copy, Trash2, RotateCcw, ChevronRight, ChevronDown, GripVertical } from 'lucide-react'
+import {
+  Copy,
+  Trash2,
+  RotateCcw,
+  ChevronRight,
+  ChevronDown,
+  GripVertical,
+  OctagonX
+} from 'lucide-react'
 
 interface MediaInfo {
   width: number
@@ -14,7 +22,7 @@ interface MediaInfo {
 interface QueueItemData {
   id: string
   fileName: string
-  status: 'pending' | 'encoding' | 'complete' | 'failed'
+  status: 'pending' | 'encoding' | 'complete' | 'failed' | 'cancelled'
   progress: number
   eta: string
   error?: string
@@ -27,6 +35,7 @@ interface QueueItemProps {
   index: number
   onRemove: (id: string) => void
   onRetry: (id: string) => void
+  onCancel: (id: string) => void
   isEditingOrder: boolean
   isDragging: boolean
   dropIndicator: 'above' | 'below' | null
@@ -41,7 +50,8 @@ const statusColors: Record<string, string> = {
   pending: 'var(--color-text-tertiary)',
   encoding: 'var(--color-accent)',
   complete: 'var(--color-success)',
-  failed: 'var(--color-error)'
+  failed: 'var(--color-error)',
+  cancelled: 'var(--color-text-tertiary)'
 }
 
 function formatFileSize(bytes: number): string {
@@ -55,6 +65,7 @@ function QueueItem({
   index,
   onRemove,
   onRetry,
+  onCancel,
   isEditingOrder,
   isDragging,
   dropIndicator,
@@ -65,6 +76,7 @@ function QueueItem({
   onDrop
 }: QueueItemProps): React.JSX.Element {
   const [expanded, setExpanded] = useState(false)
+  const [pendingAction, setPendingAction] = useState<'remove' | 'cancel' | null>(null)
 
   const canDrag = isEditingOrder && item.status === 'pending'
 
@@ -126,39 +138,76 @@ function QueueItem({
           {item.fileName}
         </span>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '12px' }}>
-          <span
-            style={{
-              fontSize: '11px',
-              fontWeight: 600,
-              padding: '2px 8px',
-              borderRadius: '9999px',
-              color: '#fff',
-              backgroundColor: statusColors[item.status]
-            }}
-          >
-            {item.status}
-          </span>
-          {item.status === 'failed' && (
-            <button title="Retry" onClick={() => onRetry(item.id)} style={buttonStyle}>
-              <RotateCcw size={14} />
-            </button>
+          {pendingAction !== null ? (
+            <>
+              <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                {pendingAction === 'cancel' ? 'Cancel encoding?' : 'Remove item?'}
+              </span>
+              <button
+                onClick={() => {
+                  if (pendingAction === 'cancel') onCancel(item.id)
+                  else onRemove(item.id)
+                  setPendingAction(null)
+                }}
+                style={{ ...buttonStyle, padding: '4px 10px', lineHeight: 'normal', color: 'var(--color-error)' }}
+              >
+                Confirm
+              </button>
+              <button
+                onClick={() => setPendingAction(null)}
+                style={{ ...buttonStyle, padding: '4px 10px', lineHeight: 'normal' }}
+              >
+                Dismiss
+              </button>
+            </>
+          ) : (
+            <>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  padding: '2px 8px',
+                  borderRadius: '9999px',
+                  color: '#fff',
+                  backgroundColor: statusColors[item.status]
+                }}
+              >
+                {item.status}
+              </span>
+              {(item.status === 'failed' || item.status === 'cancelled') && (
+                <button title="Retry" onClick={() => onRetry(item.id)} style={buttonStyle}>
+                  <RotateCcw size={14} />
+                </button>
+              )}
+              {item.status === 'complete' && item.outputFilePath && (
+                <button
+                  title="Copy output path"
+                  onClick={() => window.api.copyToClipboard(item.outputFilePath!)}
+                  style={buttonStyle}
+                >
+                  <Copy size={14} />
+                </button>
+              )}
+              {item.status === 'encoding' && (
+                <button
+                  title="Cancel"
+                  onClick={() => setPendingAction('cancel')}
+                  style={{ ...buttonStyle, color: 'var(--color-error)' }}
+                >
+                  <OctagonX size={14} />
+                </button>
+              )}
+              <button
+                title="Remove"
+                onClick={() =>
+                  item.status === 'complete' ? onRemove(item.id) : setPendingAction('remove')
+                }
+                style={{ ...buttonStyle, color: 'var(--color-error)' }}
+              >
+                <Trash2 size={14} />
+              </button>
+            </>
           )}
-          {item.status === 'complete' && item.outputFilePath && (
-            <button
-              title="Copy output path"
-              onClick={() => window.api.copyToClipboard(item.outputFilePath!)}
-              style={buttonStyle}
-            >
-              <Copy size={14} />
-            </button>
-          )}
-          <button
-            title="Remove"
-            onClick={() => onRemove(item.id)}
-            style={{ ...buttonStyle, color: 'var(--color-error)' }}
-          >
-            <Trash2 size={14} />
-          </button>
         </div>
       </div>
 

@@ -14,7 +14,7 @@ export interface AppSettings {
   theme: 'system' | 'light' | 'dark'
 }
 
-export type QueueItemStatus = 'pending' | 'encoding' | 'complete' | 'failed'
+export type QueueItemStatus = 'pending' | 'encoding' | 'complete' | 'failed' | 'cancelled'
 
 export interface MediaInfo {
   width: number

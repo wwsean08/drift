@@ -118,6 +118,14 @@ export function handleRemoveItem(id: string): void {
   processQueue()
 }
 
+export function handleCancelItem(id: string): void {
+  cancelEncode(id)
+  updateQueueItem(id, { status: 'cancelled', progress: 0, eta: '' })
+  sendToRenderer('queue:updated', getQueue())
+  rebuildTrayMenu()
+  processQueue()
+}
+
 export function handleRetryItem(id: string): void {
   updateQueueItem(id, { status: 'pending', progress: 0, eta: '', error: undefined })
   sendToRenderer('queue:updated', getQueue())

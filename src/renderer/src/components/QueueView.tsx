@@ -9,6 +9,7 @@ function QueueView(): React.JSX.Element {
     paused,
     removeItem,
     retryItem,
+    cancelItem,
     clearCompleted,
     togglePause,
     reorderQueue
@@ -163,6 +164,7 @@ function QueueView(): React.JSX.Element {
               index={i}
               onRemove={removeItem}
               onRetry={retryItem}
+              onCancel={cancelItem}
               isEditingOrder={isEditingOrder}
               isDragging={draggedId === item.id}
               dropIndicator={dropTarget?.id === item.id ? dropTarget.position : null}
