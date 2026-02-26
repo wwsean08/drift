@@ -12,6 +12,12 @@ Drift is a desktop application that automatically transcodes video files using [
 - **System tray** — minimizes to the tray so encoding continues in the background
 - **Crash recovery** — if the app is interrupted, in-progress items are re-queued on next launch
 - **Pause/resume** — pause the queue at any time without losing your place
+- **Queue reordering** — drag to reprioritize items so urgent encodes jump to the front
+- **Cancel in-progress encodes** — stop a running encode without removing it from the queue
+- **Media metadata** — view resolution, duration, codec, audio tracks, subtitles, and file size for each queued item
+- **Copy output path** — copy the encoded file's path to the clipboard with one click
+- **Dark mode** — switch between light and dark themes
+- **Auto-updates** — Windows and Linux (AppImage) builds update automatically
 
 ## Prerequisites
 
@@ -49,6 +55,7 @@ Download the latest release for your platform from the [Releases](https://github
    - **Max Parallel Encodes** — how many files to encode at once (1-8)
    - **Video Extensions** — comma-separated list of file extensions to watch (default: `.mp4, .mkv, .avi, .mov, .wmv, .flv, .webm, .m4v, .ts`)
    - **Queue Existing Files** — check this to queue files already in the watch directory when the watcher starts
+   - **Theme** — choose between light and dark mode
 
    Click **Save Settings** when done.
 
@@ -56,9 +63,12 @@ Download the latest release for your platform from the [Releases](https://github
 
 4. **Manage the queue** from the Queue tab:
    - **Pause / Resume** — temporarily stop encoding
+   - **Reorder** — drag items up or down to change encoding priority
+   - **Cancel** — stop an in-progress encode (with confirmation)
    - **Clear Completed** — remove finished items from the list
    - **Retry** — re-queue a failed item
-   - **Remove** — delete an item from the queue
+   - **Remove** — delete an item from the queue (with confirmation)
+   - **Copy output path** — click the copy icon on a completed item to copy its file path
 
 5. **Close the window** to minimize Drift to the system tray. Encoding continues in the background. Click the tray icon to restore the window.
 
