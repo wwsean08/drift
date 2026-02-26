@@ -1,5 +1,5 @@
 import { ipcMain, dialog, BrowserWindow, app, nativeTheme, clipboard } from 'electron'
-import { exec, execFile } from 'child_process'
+import { execFile } from 'child_process'
 import { readFileSync } from 'fs'
 import { getSettings, saveSettings, getQueue, AppSettings } from './store'
 import { startWatcher } from './watcher'
@@ -58,8 +58,8 @@ function parsePresetList(output: string): PresetEntry[] {
 
 export function checkHandBrakeCLI(customPath?: string): Promise<boolean> {
   return new Promise((resolve) => {
-    const cmd = customPath ? `"${customPath}" --version` : 'HandBrakeCLI --version'
-    exec(cmd, (error) => {
+    const cliPath = customPath || 'HandBrakeCLI'
+    execFile(cliPath, ['--version'], (error) => {
       resolve(!error)
     })
   })
