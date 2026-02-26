@@ -1,10 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import type { AppSettings } from '../main/store'
 
 const api = {
   getAppVersion: () => ipcRenderer.invoke('app:getVersion'),
   getSettings: () => ipcRenderer.invoke('settings:get'),
-  saveSettings: (settings: unknown) => ipcRenderer.invoke('settings:save', settings),
+  saveSettings: (settings: AppSettings) => ipcRenderer.invoke('settings:save', settings),
   selectDirectory: () => ipcRenderer.invoke('dialog:selectDirectory'),
   selectFile: (filters?: { name: string; extensions: string[] }[]) =>
     ipcRenderer.invoke('dialog:selectFile', filters),
@@ -51,6 +52,18 @@ const api = {
     const handler = (): void => callback()
     ipcRenderer.on('app:handbrake-valid', handler)
     return () => ipcRenderer.removeListener('app:handbrake-valid', handler)
+  },
+
+  onOutputDirValid: (callback: () => void) => {
+    const handler = (): void => callback()
+    ipcRenderer.on('app:output-dir-valid', handler)
+    return () => ipcRenderer.removeListener('app:output-dir-valid', handler)
+  },
+
+  onWatchDirValid: (callback: () => void) => {
+    const handler = (): void => callback()
+    ipcRenderer.on('app:watch-dir-valid', handler)
+    return () => ipcRenderer.removeListener('app:watch-dir-valid', handler)
   },
 
   setThemePreview: (theme: 'system' | 'light' | 'dark') =>

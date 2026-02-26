@@ -7,7 +7,7 @@ import icon from '../../resources/icon.png?asset'
 import { registerIpcHandlers, checkHandBrakeCLI } from './ipc'
 import { recoverFromCrash, processQueue, setMainWindow, handleNewQueueItem } from './queue'
 import { createTray, getIsQuitting } from './tray'
-import { startWatcher, setOnFileAdded } from './watcher'
+import { startWatcher, setOnFileAdded, setOnWatcherError } from './watcher'
 import { getSettings } from './store'
 
 function createWindow(): BrowserWindow {
@@ -67,6 +67,10 @@ app.whenReady().then(async () => {
 
   setOnFileAdded((item) => {
     handleNewQueueItem(item)
+  })
+
+  setOnWatcherError((message) => {
+    mainWindow.webContents.send('app:error', message)
   })
 
   const settings = getSettings()

@@ -167,7 +167,9 @@ function QueueView(): React.JSX.Element {
               onCancel={cancelItem}
               isEditingOrder={isEditingOrder}
               isDragging={draggedId === item.id}
-              dropIndicator={dropTarget?.id === item.id ? dropTarget.position : null}
+              dropIndicator={
+                dropTarget !== null && dropTarget.id === item.id ? dropTarget.position : null
+              }
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
               onDragOver={handleDragOver}

@@ -1,19 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 
-interface AppSettings {
-  watchDir: string
-  outputDir: string
-  preset: string
-  maxParallel: number
-  videoExtensions: string[]
-  queueExistingFiles: boolean
-  handbrakeCliPath: string
-  paused: boolean
-  customPresetPaths: string[]
-  outputFormat: 'm4v' | 'mp4' | 'mkv' | 'webm'
-  theme: 'system' | 'light' | 'dark'
-}
-
 interface PresetEntry {
   category: string
   name: string
@@ -52,6 +38,14 @@ function SettingsView({
   useEffect(() => {
     onDirtyChange(isDirty)
   }, [isDirty, onDirtyChange])
+
+  async function refreshSettingsAndPresets(): Promise<void> {
+    const updated = await window.api.getSettings()
+    setSettings(updated)
+    setOriginalSettings(updated)
+    const allPresets = await window.api.getPresets()
+    setPresets(allPresets)
+  }
 
   const handleBrowse = async (field: 'watchDir' | 'outputDir'): Promise<void> => {
     const dir = await window.api.selectDirectory()
@@ -183,11 +177,7 @@ function SettingsView({
             onClick={async () => {
               const custom = await window.api.importCustomPreset()
               if (custom.length > 0) {
-                const updated = await window.api.getSettings()
-                setSettings(updated)
-                setOriginalSettings(updated)
-                const allPresets = await window.api.getPresets()
-                setPresets(allPresets)
+                await refreshSettingsAndPresets()
               }
             }}
             style={browseButtonStyle}
@@ -221,11 +211,7 @@ function SettingsView({
                   <button
                     onClick={async () => {
                       await window.api.removeCustomPreset(p)
-                      const updated = await window.api.getSettings()
-                      setSettings(updated)
-                      setOriginalSettings(updated)
-                      const allPresets = await window.api.getPresets()
-                      setPresets(allPresets)
+                      await refreshSettingsAndPresets()
                     }}
                     style={{
                       background: 'none',

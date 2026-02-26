@@ -4,9 +4,14 @@ import { getSettings, getQueue, addQueueItem, QueueItem } from './store'
 
 let watcher: FSWatcher | null = null
 let onFileAdded: ((item: QueueItem) => void) | null = null
+let onWatcherError: ((message: string) => void) | null = null
 
 export function setOnFileAdded(callback: (item: QueueItem) => void): void {
   onFileAdded = callback
+}
+
+export function setOnWatcherError(callback: (message: string) => void): void {
+  onWatcherError = callback
 }
 
 export function startWatcher(): void {
@@ -33,7 +38,7 @@ export function startWatcher(): void {
     if (queue.some((item) => item.filePath === filePath)) return
 
     const item: QueueItem = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      id: crypto.randomUUID(),
       filePath,
       fileName: path.basename(filePath),
       status: 'pending',
@@ -47,6 +52,13 @@ export function startWatcher(): void {
     if (onFileAdded) {
       onFileAdded(item)
     }
+  })
+
+  watcher.on('error', (error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error)
+    onWatcherError?.(
+      `Watch directory error: ${message}. Check that "${settings.watchDir}" exists and is accessible.`
+    )
   })
 }
 

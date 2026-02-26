@@ -1,6 +1,6 @@
 import { ipcMain, dialog, BrowserWindow, app, nativeTheme, clipboard } from 'electron'
 import { execFile } from 'child_process'
-import { readFileSync } from 'fs'
+import { readFileSync, accessSync, constants } from 'fs'
 import { getSettings, saveSettings, getQueue, AppSettings } from './store'
 import { startWatcher } from './watcher'
 import {
@@ -70,8 +70,15 @@ export function registerIpcHandlers(win: BrowserWindow): void {
     return getSettings()
   })
 
-  ipcMain.handle('settings:save', async (_event, settings: AppSettings) => {
+  ipcMain.handle('settings:save', async (_event, incoming: AppSettings) => {
     const oldSettings = getSettings()
+    const settings: AppSettings = {
+      ...incoming,
+      maxParallel: Math.max(1, Math.min(8, Math.trunc(Number(incoming.maxParallel)) || 1)),
+      videoExtensions: Array.isArray(incoming.videoExtensions)
+        ? incoming.videoExtensions
+        : oldSettings.videoExtensions
+    }
     saveSettings(settings)
 
     if (
@@ -94,6 +101,30 @@ export function registerIpcHandlers(win: BrowserWindow): void {
         win.webContents.send(
           'app:error',
           'HandBrakeCLI not found. Please install HandBrake and ensure HandBrakeCLI is in your PATH, or set a custom path in Settings.'
+        )
+      }
+    }
+
+    if (settings.outputDir && oldSettings.outputDir !== settings.outputDir) {
+      try {
+        accessSync(settings.outputDir, constants.W_OK)
+        win.webContents.send('app:output-dir-valid')
+      } catch {
+        win.webContents.send(
+          'app:error',
+          `Output directory is not writable: "${settings.outputDir}". Check that it exists and you have write permission.`
+        )
+      }
+    }
+
+    if (settings.watchDir && oldSettings.watchDir !== settings.watchDir) {
+      try {
+        accessSync(settings.watchDir, constants.R_OK)
+        win.webContents.send('app:watch-dir-valid')
+      } catch {
+        win.webContents.send(
+          'app:error',
+          `Watch directory is not accessible: "${settings.watchDir}". Check that it exists and you have read permission.`
         )
       }
     }

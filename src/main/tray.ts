@@ -9,6 +9,12 @@ let isQuitting = false
 
 const defaultIconPath = join(__dirname, '../../resources/trayIconDefault.png')
 const encodingIconPath = join(__dirname, '../../resources/trayIconEncoding.png')
+const defaultIcon = nativeImage.createFromPath(defaultIconPath).resize({ width: 16, height: 16 })
+const encodingIcon = nativeImage.createFromPath(encodingIconPath).resize({ width: 16, height: 16 })
+
+let lastTrayCount = -1
+let lastTrayEncoding: boolean | null = null
+let lastTrayPaused: boolean | null = null
 
 export function getIsQuitting(): boolean {
   return isQuitting
@@ -24,8 +30,19 @@ export function rebuildTrayMenu(): void {
   )
   const count = pendingOrEncoding.length
   const isEncoding = queue.some((item) => item.status === 'encoding')
-  const iconPath = isEncoding ? encodingIconPath : defaultIconPath
-  tray.setImage(nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 }))
+
+  if (
+    count === lastTrayCount &&
+    isEncoding === lastTrayEncoding &&
+    settings.paused === lastTrayPaused
+  ) {
+    return
+  }
+  lastTrayCount = count
+  lastTrayEncoding = isEncoding
+  lastTrayPaused = settings.paused
+
+  tray.setImage(isEncoding ? encodingIcon : defaultIcon)
   const win = mainWindow
 
   const contextMenu = Menu.buildFromTemplate([
@@ -61,10 +78,8 @@ export function rebuildTrayMenu(): void {
 }
 
 export function createTray(win: BrowserWindow): void {
-  const icon = nativeImage.createFromPath(defaultIconPath).resize({ width: 16, height: 16 })
-
   mainWindow = win
-  tray = new Tray(icon)
+  tray = new Tray(defaultIcon)
   tray.setToolTip('Drift')
 
   rebuildTrayMenu()

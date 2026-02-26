@@ -1,17 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
 
-interface QueueItem {
-  id: string
-  filePath: string
-  fileName: string
-  status: 'pending' | 'encoding' | 'complete' | 'failed' | 'cancelled'
-  progress: number
-  eta: string
-  error?: string
-  addedAt: number
-  completedAt?: number
-}
-
 export function useQueue(): {
   queue: QueueItem[]
   loading: boolean

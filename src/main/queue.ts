@@ -1,3 +1,4 @@
+import { accessSync, constants } from 'fs'
 import { BrowserWindow } from 'electron'
 import {
   getSettings,
@@ -44,6 +45,22 @@ export function processQueue(): void {
 
   const pending = queue.filter((item) => item.status === 'pending')
   const toStart = pending.slice(0, available)
+
+  if (toStart.length === 0) return
+
+  if (!settings.outputDir) {
+    sendToRenderer('app:error', 'Output directory is not set. Please configure it in Settings.')
+    return
+  }
+  try {
+    accessSync(settings.outputDir, constants.W_OK)
+  } catch {
+    sendToRenderer(
+      'app:error',
+      `Output directory is not writable: "${settings.outputDir}". Check that it exists and you have write permission.`
+    )
+    return
+  }
 
   for (const item of toStart) {
     updateQueueItem(item.id, { status: 'encoding', progress: 0, eta: '' })

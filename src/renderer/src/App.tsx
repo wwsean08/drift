@@ -20,9 +20,17 @@ function App(): React.JSX.Element {
     const cleanupHandbrake = window.api.onHandbrakeValid(() => {
       setAppError(null)
     })
+    const cleanupOutputDir = window.api.onOutputDirValid(() => {
+      setAppError(null)
+    })
+    const cleanupWatchDir = window.api.onWatchDirValid(() => {
+      setAppError(null)
+    })
     return () => {
       cleanupError()
       cleanupHandbrake()
+      cleanupOutputDir()
+      cleanupWatchDir()
     }
   }, [])
 

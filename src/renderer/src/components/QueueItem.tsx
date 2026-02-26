@@ -9,29 +9,8 @@ import {
   OctagonX
 } from 'lucide-react'
 
-interface MediaInfo {
-  width: number
-  height: number
-  duration: string
-  videoCodec: string
-  audioTracks: string[]
-  subtitleCount: number
-  fileSize: number
-}
-
-interface QueueItemData {
-  id: string
-  fileName: string
-  status: 'pending' | 'encoding' | 'complete' | 'failed' | 'cancelled'
-  progress: number
-  eta: string
-  error?: string
-  outputFilePath?: string
-  mediaInfo?: MediaInfo | null
-}
-
 interface QueueItemProps {
-  item: QueueItemData
+  item: QueueItem
   index: number
   onRemove: (id: string) => void
   onRetry: (id: string) => void
@@ -149,7 +128,12 @@ function QueueItem({
                   else onRemove(item.id)
                   setPendingAction(null)
                 }}
-                style={{ ...buttonStyle, padding: '4px 10px', lineHeight: 'normal', color: 'var(--color-error)' }}
+                style={{
+                  ...buttonStyle,
+                  padding: '4px 10px',
+                  lineHeight: 'normal',
+                  color: 'var(--color-error)'
+                }}
               >
                 Confirm
               </button>
@@ -175,7 +159,12 @@ function QueueItem({
                 {item.status}
               </span>
               {(item.status === 'failed' || item.status === 'cancelled') && (
-                <button title="Retry" data-tooltip="Retry" onClick={() => onRetry(item.id)} style={buttonStyle}>
+                <button
+                  title="Retry"
+                  data-tooltip="Retry"
+                  onClick={() => onRetry(item.id)}
+                  style={buttonStyle}
+                >
                   <RotateCcw size={14} />
                 </button>
               )}
