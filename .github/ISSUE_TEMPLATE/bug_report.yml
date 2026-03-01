@@ -1,0 +1,75 @@
+name: Bug Report
+description: Report something that isn't working correctly
+labels: ['bug']
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened, and what did you expect to happen instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce the issue?
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: App Version
+      description: Found in the title bar or About screen (e.g. `v0.3.0`)
+      placeholder: v0.x.x
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS & Version
+      description: Which operating system are you running?
+      options:
+        - macOS
+        - Windows
+        - Linux
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS Version
+      description: e.g. macOS 15.3, Windows 11, Ubuntu 24.04
+      placeholder: e.g. macOS 15.3
+    validations:
+      required: true
+
+  - type: input
+    id: handbrakecli-version
+    attributes:
+      label: HandBrakeCLI Version
+      description: Run `HandBrakeCLI --version` in a terminal and paste the output
+      placeholder: HandBrakeCLI 1.x.x
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Error Output
+      description: Paste any relevant output from DevTools (View → Toggle Developer Tools) or system logs
+      render: shell
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Anything else that might help — screenshots, input file types, HandBrake preset names, etc.
