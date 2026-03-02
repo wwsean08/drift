@@ -48,7 +48,7 @@ function createWindow(): BrowserWindow {
   return mainWindow
 }
 
-app.whenReady().then(async () => {
+app.on('ready', async () => {
   electronApp.setAppUserModelId('com.drift.app')
 
   app.on('browser-window-created', (_, window) => {
