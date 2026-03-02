@@ -8,10 +8,10 @@ interface PresetEntry {
 function SettingsView({
   onDirtyChange,
   saveRef
-}: {
+}: Readonly<{
   onDirtyChange: (dirty: boolean) => void
   saveRef: React.RefObject<(() => Promise<void>) | null>
-}): React.JSX.Element {
+}>): React.JSX.Element {
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [originalSettings, setOriginalSettings] = useState<AppSettings | null>(null)
   const [saving, setSaving] = useState(false)
@@ -28,11 +28,11 @@ function SettingsView({
     JSON.stringify(settings) !== JSON.stringify(originalSettings)
 
   useEffect(() => {
-    window.api.getSettings().then((s) => {
+    globalThis.api.getSettings().then((s) => {
       setSettings(s)
       setOriginalSettings(s)
     })
-    window.api.getPresets().then(setPresets)
+    globalThis.api.getPresets().then(setPresets)
   }, [])
 
   useEffect(() => {
@@ -40,15 +40,15 @@ function SettingsView({
   }, [isDirty, onDirtyChange])
 
   async function refreshSettingsAndPresets(): Promise<void> {
-    const updated = await window.api.getSettings()
+    const updated = await globalThis.api.getSettings()
     setSettings(updated)
     setOriginalSettings(updated)
-    const allPresets = await window.api.getPresets()
+    const allPresets = await globalThis.api.getPresets()
     setPresets(allPresets)
   }
 
   const handleBrowse = async (field: 'watchDir' | 'outputDir'): Promise<void> => {
-    const dir = await window.api.selectDirectory()
+    const dir = await globalThis.api.selectDirectory()
     if (dir && settings) {
       setSettings({ ...settings, [field]: dir })
     }
@@ -57,8 +57,8 @@ function SettingsView({
   const handleSave = async (): Promise<void> => {
     if (!settings) return
     setSaving(true)
-    await window.api.saveSettings(settings)
-    const allPresets = await window.api.getPresets()
+    await globalThis.api.saveSettings(settings)
+    const allPresets = await globalThis.api.getPresets()
     setPresets(allPresets)
     setOriginalSettings(settings)
     setSaving(false)
@@ -78,7 +78,10 @@ function SettingsView({
     )
   }
 
-  const saveLabel = saving ? 'Saving...' : saved ? 'Saved!' : 'Save Settings'
+  let saveLabel: string
+  if (saving) saveLabel = 'Saving...'
+  else if (saved) saveLabel = 'Saved!'
+  else saveLabel = 'Save Settings'
 
   return (
     <div
@@ -96,7 +99,7 @@ function SettingsView({
           onChange={(e) => {
             const v = e.target.value as 'system' | 'light' | 'dark'
             setSettings({ ...settings, theme: v })
-            window.api.setThemePreview(v)
+            globalThis.api.setThemePreview(v)
           }}
           style={{ ...inputStyle, flex: 'none', width: '180px' }}
         >
@@ -147,7 +150,7 @@ function SettingsView({
           />
           <button
             onClick={async () => {
-              const file = await window.api.selectFile()
+              const file = await globalThis.api.selectFile()
               if (file && settings) {
                 setSettings({ ...settings, handbrakeCliPath: file })
               }
@@ -177,7 +180,7 @@ function SettingsView({
         <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <button
             onClick={async () => {
-              const custom = await window.api.importCustomPreset()
+              const custom = await globalThis.api.importCustomPreset()
               if (custom.length > 0) {
                 await refreshSettingsAndPresets()
               }
@@ -212,7 +215,7 @@ function SettingsView({
                   </span>
                   <button
                     onClick={async () => {
-                      await window.api.removeCustomPreset(p)
+                      await globalThis.api.removeCustomPreset(p)
                       await refreshSettingsAndPresets()
                     }}
                     style={{
@@ -269,7 +272,7 @@ function SettingsView({
           onChange={(e) =>
             setSettings({
               ...settings,
-              maxParallel: Math.max(1, Math.min(8, parseInt(e.target.value) || 1))
+              maxParallel: Math.max(1, Math.min(8, Number.parseInt(e.target.value) || 1))
             })
           }
           style={{ ...inputStyle, width: '80px' }}
@@ -342,7 +345,7 @@ function PresetCombobox({
   setHighlightedIndex,
   containerRef,
   dropdownRef
-}: {
+}: Readonly<{
   value: string
   presets: PresetEntry[]
   onChange: (v: string) => void
@@ -352,7 +355,7 @@ function PresetCombobox({
   setHighlightedIndex: (v: number) => void
   containerRef: React.RefObject<HTMLDivElement | null>
   dropdownRef: React.RefObject<HTMLDivElement | null>
-}): React.JSX.Element {
+}>): React.JSX.Element {
   const query = value.toLowerCase()
   const filtered = presets.filter((p) => p.name.toLowerCase().includes(query))
 
@@ -410,7 +413,7 @@ function PresetCombobox({
   // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent): void => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (!containerRef.current?.contains(e.target as Node)) {
         setOpen(false)
       }
     }
@@ -510,10 +513,10 @@ function scrollToIndex(index: number, ref: React.RefObject<HTMLDivElement | null
 function FieldGroup({
   label,
   children
-}: {
+}: Readonly<{
   label: string
   children: React.ReactNode
-}): React.JSX.Element {
+}>): React.JSX.Element {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
       <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>

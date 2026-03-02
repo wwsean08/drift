@@ -1,6 +1,6 @@
 import { ipcMain, dialog, BrowserWindow, app, nativeTheme, clipboard } from 'electron'
-import { execFile } from 'child_process'
-import { readFileSync, accessSync, constants } from 'fs'
+import { execFile } from 'node:child_process'
+import { readFileSync, accessSync, constants } from 'node:fs'
 import { getSettings, saveSettings, getQueue, AppSettings } from './store'
 import { startWatcher } from './watcher'
 import {

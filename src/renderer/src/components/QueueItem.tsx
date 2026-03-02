@@ -68,33 +68,61 @@ function QueueItemActions({
   onRemove,
   onRetry,
   onCancel
-}: QueueItemActionsProps): React.JSX.Element {
-  if (pendingAction !== null) {
+}: Readonly<QueueItemActionsProps>): React.JSX.Element {
+  if (pendingAction === null) {
     return (
       <>
-        <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-          {pendingAction === 'cancel' ? 'Cancel encoding?' : 'Remove item?'}
-        </span>
-        <button
-          onClick={() => {
-            if (pendingAction === 'cancel') onCancel(item.id)
-            else onRemove(item.id)
-            setPendingAction(null)
-          }}
+        <span
           style={{
-            ...buttonStyle,
-            padding: '4px 10px',
-            lineHeight: 'normal',
-            color: 'var(--color-error)'
+            fontSize: '11px',
+            fontWeight: 600,
+            padding: '2px 8px',
+            borderRadius: '9999px',
+            color: '#fff',
+            backgroundColor: statusColors[item.status]
           }}
         >
-          Confirm
-        </button>
+          {item.status}
+        </span>
+        {(item.status === 'failed' || item.status === 'cancelled') && (
+          <button
+            title="Retry"
+            data-tooltip="Retry"
+            onClick={() => onRetry(item.id)}
+            style={buttonStyle}
+          >
+            <RotateCcw size={14} />
+          </button>
+        )}
+        {item.status === 'complete' && item.outputFilePath && (
+          <button
+            title="Copy output path"
+            data-tooltip="Copy output path"
+            onClick={() => globalThis.api.copyToClipboard(item.outputFilePath!)}
+            style={buttonStyle}
+          >
+            <Copy size={14} />
+          </button>
+        )}
+        {item.status === 'encoding' && (
+          <button
+            title="Cancel"
+            data-tooltip="Cancel"
+            onClick={() => setPendingAction('cancel')}
+            style={{ ...buttonStyle, color: 'var(--color-error)' }}
+          >
+            <OctagonX size={14} />
+          </button>
+        )}
         <button
-          onClick={() => setPendingAction(null)}
-          style={{ ...buttonStyle, padding: '4px 10px', lineHeight: 'normal' }}
+          title="Remove"
+          data-tooltip="Remove"
+          onClick={() =>
+            item.status === 'complete' ? onRemove(item.id) : setPendingAction('remove')
+          }
+          style={{ ...buttonStyle, color: 'var(--color-error)' }}
         >
-          Dismiss
+          <Trash2 size={14} />
         </button>
       </>
     )
@@ -102,57 +130,29 @@ function QueueItemActions({
 
   return (
     <>
-      <span
+      <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+        {pendingAction === 'cancel' ? 'Cancel encoding?' : 'Remove item?'}
+      </span>
+      <button
+        onClick={() => {
+          if (pendingAction === 'cancel') onCancel(item.id)
+          else onRemove(item.id)
+          setPendingAction(null)
+        }}
         style={{
-          fontSize: '11px',
-          fontWeight: 600,
-          padding: '2px 8px',
-          borderRadius: '9999px',
-          color: '#fff',
-          backgroundColor: statusColors[item.status]
+          ...buttonStyle,
+          padding: '4px 10px',
+          lineHeight: 'normal',
+          color: 'var(--color-error)'
         }}
       >
-        {item.status}
-      </span>
-      {(item.status === 'failed' || item.status === 'cancelled') && (
-        <button
-          title="Retry"
-          data-tooltip="Retry"
-          onClick={() => onRetry(item.id)}
-          style={buttonStyle}
-        >
-          <RotateCcw size={14} />
-        </button>
-      )}
-      {item.status === 'complete' && item.outputFilePath && (
-        <button
-          title="Copy output path"
-          data-tooltip="Copy output path"
-          onClick={() => window.api.copyToClipboard(item.outputFilePath!)}
-          style={buttonStyle}
-        >
-          <Copy size={14} />
-        </button>
-      )}
-      {item.status === 'encoding' && (
-        <button
-          title="Cancel"
-          data-tooltip="Cancel"
-          onClick={() => setPendingAction('cancel')}
-          style={{ ...buttonStyle, color: 'var(--color-error)' }}
-        >
-          <OctagonX size={14} />
-        </button>
-      )}
+        Confirm
+      </button>
       <button
-        title="Remove"
-        data-tooltip="Remove"
-        onClick={() =>
-          item.status === 'complete' ? onRemove(item.id) : setPendingAction('remove')
-        }
-        style={{ ...buttonStyle, color: 'var(--color-error)' }}
+        onClick={() => setPendingAction(null)}
+        style={{ ...buttonStyle, padding: '4px 10px', lineHeight: 'normal' }}
       >
-        <Trash2 size={14} />
+        Dismiss
       </button>
     </>
   )
@@ -232,7 +232,7 @@ function QueueItem({
   onDragOver,
   onDragLeave,
   onDrop
-}: QueueItemProps): React.JSX.Element {
+}: Readonly<QueueItemProps>): React.JSX.Element {
   const [expanded, setExpanded] = useState(false)
   const [pendingAction, setPendingAction] = useState<'remove' | 'cancel' | null>(null)
 

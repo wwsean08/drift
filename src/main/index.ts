@@ -1,5 +1,5 @@
 import { app, shell, BrowserWindow, nativeTheme } from 'electron'
-import { join } from 'path'
+import { join } from 'node:path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import electronUpdater from 'electron-updater'
 const { autoUpdater } = electronUpdater

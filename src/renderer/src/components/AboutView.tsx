@@ -6,7 +6,7 @@ function AboutView(): React.JSX.Element {
   const [licenseOpen, setLicenseOpen] = useState(false)
 
   useEffect(() => {
-    window.api.getAppVersion().then(setVersion)
+    globalThis.api.getAppVersion().then(setVersion)
   }, [])
 
   return (

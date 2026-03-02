@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { execSync } from 'node:child_process'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async function afterPack(context) {

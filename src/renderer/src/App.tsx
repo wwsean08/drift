@@ -14,16 +14,16 @@ function App(): React.JSX.Element {
   const saveRef = useRef<(() => Promise<void>) | null>(null)
 
   useEffect(() => {
-    const cleanupError = window.api.onAppError((message) => {
+    const cleanupError = globalThis.api.onAppError((message) => {
       setAppError(message)
     })
-    const cleanupHandbrake = window.api.onHandbrakeValid(() => {
+    const cleanupHandbrake = globalThis.api.onHandbrakeValid(() => {
       setAppError(null)
     })
-    const cleanupOutputDir = window.api.onOutputDirValid(() => {
+    const cleanupOutputDir = globalThis.api.onOutputDirValid(() => {
       setAppError(null)
     })
-    const cleanupWatchDir = window.api.onWatchDirValid(() => {
+    const cleanupWatchDir = globalThis.api.onWatchDirValid(() => {
       setAppError(null)
     })
     return () => {
@@ -182,7 +182,7 @@ function App(): React.JSX.Element {
                   setActiveTab(pendingTab!)
                   setShowUnsavedModal(false)
                   setPendingTab(null)
-                  window.api.getSettings().then((s) => window.api.setThemePreview(s.theme))
+                  globalThis.api.getSettings().then((s) => globalThis.api.setThemePreview(s.theme))
                 }}
                 style={{
                   padding: '8px 16px',
@@ -225,11 +225,11 @@ function TabButton({
   label,
   active,
   onClick
-}: {
+}: Readonly<{
   label: string
   active: boolean
   onClick: () => void
-}): React.JSX.Element {
+}>): React.JSX.Element {
   return (
     <button
       onClick={onClick}

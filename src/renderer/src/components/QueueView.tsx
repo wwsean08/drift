@@ -116,7 +116,7 @@ function QueueView(): React.JSX.Element {
         }}
       >
         <span style={{ fontWeight: 600, fontSize: '14px' }}>
-          Queue ({queue.length} item{queue.length !== 1 ? 's' : ''})
+          Queue ({queue.length} item{queue.length === 1 ? '' : 's'})
         </span>
         <div style={{ display: 'flex', gap: '8px' }}>
           {isEditingOrder ? (

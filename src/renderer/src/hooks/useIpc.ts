@@ -23,19 +23,19 @@ export function useQueue(): {
   )
 
   useEffect(() => {
-    window.api.getQueue().then((q) => {
+    globalThis.api.getQueue().then((q) => {
       setQueue(q)
       setLoading(false)
     })
-    window.api.getPaused().then(setPaused)
+    globalThis.api.getPaused().then(setPaused)
 
-    const cleanupUpdated = window.api.onQueueUpdated((updatedQueue) => {
+    const cleanupUpdated = globalThis.api.onQueueUpdated((updatedQueue) => {
       setQueue(updatedQueue)
     })
 
-    const cleanupProgress = window.api.onQueueProgress(updateProgress)
+    const cleanupProgress = globalThis.api.onQueueProgress(updateProgress)
 
-    const cleanupPaused = window.api.onPausedUpdated((newPaused) => {
+    const cleanupPaused = globalThis.api.onPausedUpdated((newPaused) => {
       setPaused(newPaused)
     })
 
@@ -47,28 +47,28 @@ export function useQueue(): {
   }, [updateProgress])
 
   const removeItem = useCallback(async (id: string) => {
-    await window.api.removeItem(id)
+    await globalThis.api.removeItem(id)
   }, [])
 
   const retryItem = useCallback(async (id: string) => {
-    await window.api.retryItem(id)
+    await globalThis.api.retryItem(id)
   }, [])
 
   const cancelItem = useCallback(async (id: string) => {
-    await window.api.cancelItem(id)
+    await globalThis.api.cancelItem(id)
   }, [])
 
   const clearCompleted = useCallback(async () => {
-    await window.api.clearCompleted()
+    await globalThis.api.clearCompleted()
   }, [])
 
   const togglePause = useCallback(async () => {
-    const newPaused = await window.api.setPaused(!paused)
+    const newPaused = await globalThis.api.setPaused(!paused)
     setPaused(newPaused)
   }, [paused])
 
   const reorderQueue = useCallback(async (ids: string[]) => {
-    await window.api.reorderQueue(ids)
+    await globalThis.api.reorderQueue(ids)
   }, [])
 
   return {

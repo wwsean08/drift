@@ -1,4 +1,4 @@
-import { accessSync, constants } from 'fs'
+import { accessSync, constants } from 'node:fs'
 import { BrowserWindow } from 'electron'
 import {
   getSettings,

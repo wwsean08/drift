@@ -1,5 +1,5 @@
 import { watch, FSWatcher } from 'chokidar'
-import path from 'path'
+import path from 'node:path'
 import { getSettings, getQueue, addQueueItem, QueueItem } from './store'
 
 let watcher: FSWatcher | null = null
@@ -20,7 +20,9 @@ export function startWatcher(): void {
   const settings = getSettings()
   if (!settings.watchDir) return
 
-  const extensions = settings.videoExtensions.map((ext) => (ext.startsWith('.') ? ext : `.${ext}`))
+  const extensions = new Set(
+    settings.videoExtensions.map((ext) => (ext.startsWith('.') ? ext : `.${ext}`))
+  )
 
   watcher = watch(settings.watchDir, {
     ignoreInitial: !settings.queueExistingFiles,
@@ -32,7 +34,7 @@ export function startWatcher(): void {
 
   watcher.on('add', (filePath: string) => {
     const ext = path.extname(filePath).toLowerCase()
-    if (!extensions.includes(ext)) return
+    if (!extensions.has(ext)) return
 
     const queue = getQueue()
     if (queue.some((item) => item.filePath === filePath)) return
