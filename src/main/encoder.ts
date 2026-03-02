@@ -12,6 +12,14 @@ interface EncodeCallbacks {
   onError: (id: string, message: string) => void
 }
 
+interface EncodeOptions {
+  outputDir: string
+  preset: string
+  handbrakeCliPath?: string
+  customPresetPaths?: string[]
+  outputFormat?: 'm4v' | 'mp4' | 'mkv' | 'webm'
+}
+
 interface HandbrakeProcess {
   cancel(): void
 }
@@ -42,13 +50,10 @@ function buildMergedPresetFile(customPresetPaths: string[]): string | null {
 export function startEncode(
   id: string,
   inputPath: string,
-  outputDir: string,
-  preset: string,
-  callbacks: EncodeCallbacks,
-  handbrakeCliPath?: string,
-  customPresetPaths?: string[],
-  outputFormat: 'm4v' | 'mp4' | 'mkv' | 'webm' = 'm4v'
+  options: EncodeOptions,
+  callbacks: EncodeCallbacks
 ): void {
+  const { outputDir, preset, handbrakeCliPath, customPresetPaths, outputFormat = 'm4v' } = options
   const baseName = path.basename(inputPath, path.extname(inputPath))
   const outputPath = path.join(outputDir, `${baseName}.${outputFormat}`)
 

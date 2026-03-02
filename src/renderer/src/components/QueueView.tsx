@@ -146,7 +146,7 @@ function QueueView(): React.JSX.Element {
         </div>
       </div>
 
-      <div style={{ flex: 1, overflow: 'auto' }}>
+      <div role="list" style={{ flex: 1, overflow: 'auto' }}>
         {queue.length === 0 ? (
           <div
             style={{ padding: '48px 24px', textAlign: 'center', color: 'var(--color-text-muted)' }}

@@ -63,7 +63,7 @@ function AboutView(): React.JSX.Element {
             }}
           >
             &#9654;
-          </span>
+          </span>{' '}
           License
         </button>
         {licenseOpen && (

@@ -78,6 +78,8 @@ function SettingsView({
     )
   }
 
+  const saveLabel = saving ? 'Saving...' : saved ? 'Saved!' : 'Save Settings'
+
   return (
     <div
       style={{
@@ -323,7 +325,7 @@ function SettingsView({
             opacity: saving ? 0.7 : 1
           }}
         >
-          {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Settings'}
+          {saveLabel}
         </button>
       </div>
     </div>
@@ -396,7 +398,7 @@ function PresetCombobox({
     } else if (e.key === 'Enter') {
       e.preventDefault()
       const item = items[highlightedIndex]
-      if (item && item.type === 'preset') {
+      if (item?.type === 'preset') {
         onChange(item.entry.name)
         setOpen(false)
       }
@@ -466,7 +468,8 @@ function PresetCombobox({
                 {item.label}
               </div>
             ) : (
-              <div
+              <button
+                type="button"
                 key={item.entry.name}
                 data-index={i}
                 onMouseDown={(e) => {
@@ -476,6 +479,10 @@ function PresetCombobox({
                 }}
                 onMouseEnter={() => setHighlightedIndex(i)}
                 style={{
+                  display: 'block',
+                  width: '100%',
+                  textAlign: 'left',
+                  border: 'none',
                   padding: '6px 10px 6px 20px',
                   fontSize: '13px',
                   cursor: 'pointer',
@@ -485,7 +492,7 @@ function PresetCombobox({
                 }}
               >
                 {item.entry.name}
-              </div>
+              </button>
             )
           )}
         </div>

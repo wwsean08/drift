@@ -173,8 +173,19 @@ function QueueItemMediaInfo({
 
   return (
     <>
-      <div
-        style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}
+      <button
+        type="button"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          cursor: 'pointer',
+          userSelect: 'none',
+          border: 'none',
+          background: 'none',
+          padding: 0,
+          width: '100%',
+          font: 'inherit'
+        }}
         onClick={() => setExpanded(!expanded)}
       >
         <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
@@ -192,7 +203,7 @@ function QueueItemMediaInfo({
             style={{ marginLeft: '4px', color: 'var(--color-text-tertiary)', flexShrink: 0 }}
           />
         )}
-      </div>
+      </button>
       {expanded && (
         <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
           {'Audio: '}
@@ -229,6 +240,7 @@ function QueueItem({
 
   return (
     <div
+      role="listitem"
       draggable={canDrag}
       onDragStart={
         canDrag
