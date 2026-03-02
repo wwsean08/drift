@@ -1,4 +1,4 @@
-import { accessSync, constants } from 'fs'
+import { accessSync, constants } from 'node:fs'
 import { BrowserWindow } from 'electron'
 import {
   getSettings,
@@ -70,8 +70,14 @@ export function processQueue(): void {
     startEncode(
       item.id,
       item.filePath,
-      settings.outputDir,
-      settings.preset,
+      {
+        outputDir: settings.outputDir,
+        preset: settings.preset,
+        handbrakeCliPath: settings.handbrakeCliPath || undefined,
+        customPresetPaths:
+          (settings.customPresetPaths || []).length > 0 ? settings.customPresetPaths : undefined,
+        outputFormat: settings.outputFormat || 'm4v'
+      },
       {
         onProgress: (id, percent, eta) => {
           sendToRenderer('queue:progress', { id, progress: percent, eta })
@@ -99,10 +105,7 @@ export function processQueue(): void {
           rebuildTrayMenu()
           processQueue()
         }
-      },
-      settings.handbrakeCliPath || undefined,
-      (settings.customPresetPaths || []).length > 0 ? settings.customPresetPaths : undefined,
-      settings.outputFormat || 'm4v'
+      }
     )
   }
 }

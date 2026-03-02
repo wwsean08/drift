@@ -1,5 +1,7 @@
 # Drift
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=wwsean08_drift&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=wwsean08_drift)
+
 Drift is a desktop application that automatically transcodes video files using [HandBrakeCLI](https://handbrake.fr). Point it at a folder, choose a preset, and Drift will watch for new video files and encode them in the background.
 
 ![](/docs/queue.png)

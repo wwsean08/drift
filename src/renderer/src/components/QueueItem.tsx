@@ -39,6 +39,185 @@ function formatFileSize(bytes: number): string {
   return `${Math.round(bytes / 1_000)} KB`
 }
 
+const buttonStyle: React.CSSProperties = {
+  background: 'none',
+  border: '1px solid var(--color-border-input)',
+  borderRadius: '4px',
+  padding: '4px',
+  cursor: 'pointer',
+  color: 'var(--color-text-secondary)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  lineHeight: 0
+}
+
+interface QueueItemActionsProps {
+  item: QueueItem
+  pendingAction: 'remove' | 'cancel' | null
+  setPendingAction: React.Dispatch<React.SetStateAction<'remove' | 'cancel' | null>>
+  onRemove: (id: string) => void
+  onRetry: (id: string) => void
+  onCancel: (id: string) => void
+}
+
+function QueueItemActions({
+  item,
+  pendingAction,
+  setPendingAction,
+  onRemove,
+  onRetry,
+  onCancel
+}: Readonly<QueueItemActionsProps>): React.JSX.Element {
+  if (pendingAction === null) {
+    return (
+      <>
+        <span
+          style={{
+            fontSize: '11px',
+            fontWeight: 600,
+            padding: '2px 8px',
+            borderRadius: '9999px',
+            color: '#fff',
+            backgroundColor: statusColors[item.status]
+          }}
+        >
+          {item.status}
+        </span>
+        {(item.status === 'failed' || item.status === 'cancelled') && (
+          <button
+            title="Retry"
+            data-tooltip="Retry"
+            onClick={() => onRetry(item.id)}
+            style={buttonStyle}
+          >
+            <RotateCcw size={14} />
+          </button>
+        )}
+        {item.status === 'complete' && item.outputFilePath && (
+          <button
+            title="Copy output path"
+            data-tooltip="Copy output path"
+            onClick={() => globalThis.api.copyToClipboard(item.outputFilePath!)}
+            style={buttonStyle}
+          >
+            <Copy size={14} />
+          </button>
+        )}
+        {item.status === 'encoding' && (
+          <button
+            title="Cancel"
+            data-tooltip="Cancel"
+            onClick={() => setPendingAction('cancel')}
+            style={{ ...buttonStyle, color: 'var(--color-error)' }}
+          >
+            <OctagonX size={14} />
+          </button>
+        )}
+        <button
+          title="Remove"
+          data-tooltip="Remove"
+          onClick={() =>
+            item.status === 'complete' ? onRemove(item.id) : setPendingAction('remove')
+          }
+          style={{ ...buttonStyle, color: 'var(--color-error)' }}
+        >
+          <Trash2 size={14} />
+        </button>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+        {pendingAction === 'cancel' ? 'Cancel encoding?' : 'Remove item?'}
+      </span>
+      <button
+        onClick={() => {
+          if (pendingAction === 'cancel') onCancel(item.id)
+          else onRemove(item.id)
+          setPendingAction(null)
+        }}
+        style={{
+          ...buttonStyle,
+          padding: '4px 10px',
+          lineHeight: 'normal',
+          color: 'var(--color-error)'
+        }}
+      >
+        Confirm
+      </button>
+      <button
+        onClick={() => setPendingAction(null)}
+        style={{ ...buttonStyle, padding: '4px 10px', lineHeight: 'normal' }}
+      >
+        Dismiss
+      </button>
+    </>
+  )
+}
+
+interface QueueItemMediaInfoProps {
+  item: QueueItem
+  expanded: boolean
+  setExpanded: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+function QueueItemMediaInfo({
+  item,
+  expanded,
+  setExpanded
+}: QueueItemMediaInfoProps): React.JSX.Element | null {
+  if (item.mediaInfo == null) return null
+
+  return (
+    <>
+      <button
+        type="button"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          cursor: 'pointer',
+          userSelect: 'none',
+          border: 'none',
+          background: 'none',
+          padding: 0,
+          width: '100%',
+          font: 'inherit'
+        }}
+        onClick={() => setExpanded(!expanded)}
+      >
+        <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+          {item.mediaInfo.width}×{item.mediaInfo.height} · {item.mediaInfo.duration}
+          {item.mediaInfo.videoCodec ? ` · ${item.mediaInfo.videoCodec}` : ''}
+        </span>
+        {expanded ? (
+          <ChevronDown
+            size={14}
+            style={{ marginLeft: '4px', color: 'var(--color-text-tertiary)', flexShrink: 0 }}
+          />
+        ) : (
+          <ChevronRight
+            size={14}
+            style={{ marginLeft: '4px', color: 'var(--color-text-tertiary)', flexShrink: 0 }}
+          />
+        )}
+      </button>
+      {expanded && (
+        <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+          {'Audio: '}
+          {item.mediaInfo.audioTracks.length > 0 ? item.mediaInfo.audioTracks.join(' · ') : '—'}
+          {'   Subtitles: '}
+          {item.mediaInfo.subtitleCount}
+          {'   Size: '}
+          {formatFileSize(item.mediaInfo.fileSize)}
+        </span>
+      )}
+    </>
+  )
+}
+
 function QueueItem({
   item,
   index,
@@ -53,7 +232,7 @@ function QueueItem({
   onDragOver,
   onDragLeave,
   onDrop
-}: QueueItemProps): React.JSX.Element {
+}: Readonly<QueueItemProps>): React.JSX.Element {
   const [expanded, setExpanded] = useState(false)
   const [pendingAction, setPendingAction] = useState<'remove' | 'cancel' | null>(null)
 
@@ -61,6 +240,7 @@ function QueueItem({
 
   return (
     <div
+      role="listitem"
       draggable={canDrag}
       onDragStart={
         canDrag
@@ -117,89 +297,14 @@ function QueueItem({
           {item.fileName}
         </span>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '12px' }}>
-          {pendingAction !== null ? (
-            <>
-              <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-                {pendingAction === 'cancel' ? 'Cancel encoding?' : 'Remove item?'}
-              </span>
-              <button
-                onClick={() => {
-                  if (pendingAction === 'cancel') onCancel(item.id)
-                  else onRemove(item.id)
-                  setPendingAction(null)
-                }}
-                style={{
-                  ...buttonStyle,
-                  padding: '4px 10px',
-                  lineHeight: 'normal',
-                  color: 'var(--color-error)'
-                }}
-              >
-                Confirm
-              </button>
-              <button
-                onClick={() => setPendingAction(null)}
-                style={{ ...buttonStyle, padding: '4px 10px', lineHeight: 'normal' }}
-              >
-                Dismiss
-              </button>
-            </>
-          ) : (
-            <>
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  padding: '2px 8px',
-                  borderRadius: '9999px',
-                  color: '#fff',
-                  backgroundColor: statusColors[item.status]
-                }}
-              >
-                {item.status}
-              </span>
-              {(item.status === 'failed' || item.status === 'cancelled') && (
-                <button
-                  title="Retry"
-                  data-tooltip="Retry"
-                  onClick={() => onRetry(item.id)}
-                  style={buttonStyle}
-                >
-                  <RotateCcw size={14} />
-                </button>
-              )}
-              {item.status === 'complete' && item.outputFilePath && (
-                <button
-                  title="Copy output path"
-                  data-tooltip="Copy output path"
-                  onClick={() => window.api.copyToClipboard(item.outputFilePath!)}
-                  style={buttonStyle}
-                >
-                  <Copy size={14} />
-                </button>
-              )}
-              {item.status === 'encoding' && (
-                <button
-                  title="Cancel"
-                  data-tooltip="Cancel"
-                  onClick={() => setPendingAction('cancel')}
-                  style={{ ...buttonStyle, color: 'var(--color-error)' }}
-                >
-                  <OctagonX size={14} />
-                </button>
-              )}
-              <button
-                title="Remove"
-                data-tooltip="Remove"
-                onClick={() =>
-                  item.status === 'complete' ? onRemove(item.id) : setPendingAction('remove')
-                }
-                style={{ ...buttonStyle, color: 'var(--color-error)' }}
-              >
-                <Trash2 size={14} />
-              </button>
-            </>
-          )}
+          <QueueItemActions
+            item={item}
+            pendingAction={pendingAction}
+            setPendingAction={setPendingAction}
+            onRemove={onRemove}
+            onRetry={onRetry}
+            onCancel={onCancel}
+          />
         </div>
       </div>
 
@@ -208,39 +313,7 @@ function QueueItem({
           <span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>Scanning…</span>
         )}
 
-      {item.mediaInfo != null && (
-        <div
-          style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}
-          onClick={() => setExpanded(!expanded)}
-        >
-          <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-            {item.mediaInfo.width}×{item.mediaInfo.height} · {item.mediaInfo.duration}
-            {item.mediaInfo.videoCodec ? ` · ${item.mediaInfo.videoCodec}` : ''}
-          </span>
-          {expanded ? (
-            <ChevronDown
-              size={14}
-              style={{ marginLeft: '4px', color: 'var(--color-text-tertiary)', flexShrink: 0 }}
-            />
-          ) : (
-            <ChevronRight
-              size={14}
-              style={{ marginLeft: '4px', color: 'var(--color-text-tertiary)', flexShrink: 0 }}
-            />
-          )}
-        </div>
-      )}
-
-      {expanded && item.mediaInfo != null && (
-        <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-          {'Audio: '}
-          {item.mediaInfo.audioTracks.length > 0 ? item.mediaInfo.audioTracks.join(' · ') : '—'}
-          {'   Subtitles: '}
-          {item.mediaInfo.subtitleCount}
-          {'   Size: '}
-          {formatFileSize(item.mediaInfo.fileSize)}
-        </span>
-      )}
+      <QueueItemMediaInfo item={item} expanded={expanded} setExpanded={setExpanded} />
 
       {item.status === 'encoding' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -281,19 +354,6 @@ function QueueItem({
       )}
     </div>
   )
-}
-
-const buttonStyle: React.CSSProperties = {
-  background: 'none',
-  border: '1px solid var(--color-border-input)',
-  borderRadius: '4px',
-  padding: '4px',
-  cursor: 'pointer',
-  color: 'var(--color-text-secondary)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  lineHeight: 0
 }
 
 export default QueueItem

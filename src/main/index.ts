@@ -1,5 +1,5 @@
 import { app, shell, BrowserWindow, nativeTheme } from 'electron'
-import { join } from 'path'
+import { join } from 'node:path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import electronUpdater from 'electron-updater'
 const { autoUpdater } = electronUpdater
@@ -48,7 +48,7 @@ function createWindow(): BrowserWindow {
   return mainWindow
 }
 
-app.whenReady().then(async () => {
+app.on('ready', async () => {
   electronApp.setAppUserModelId('com.drift.app')
 
   app.on('browser-window-created', (_, window) => {

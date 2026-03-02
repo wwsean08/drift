@@ -1,5 +1,5 @@
 import { Tray, Menu, BrowserWindow, app, nativeImage } from 'electron'
-import { join } from 'path'
+import { join } from 'node:path'
 import { getSettings, getQueue } from './store'
 import { setPaused } from './queue'
 

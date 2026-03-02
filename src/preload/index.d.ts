@@ -1,6 +1,9 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 
 declare global {
+  var api: DriftAPI
+  var electron: ElectronAPI
+
   interface AppSettings {
     watchDir: string
     outputDir: string

@@ -1,15 +1,23 @@
 import hbjs from 'handbrake-js'
-import path from 'path'
-import fs from 'fs'
-import os from 'os'
-import crypto from 'crypto'
-import { execFile } from 'child_process'
+import path from 'node:path'
+import fs from 'node:fs'
+import os from 'node:os'
+import crypto from 'node:crypto'
+import { execFile } from 'node:child_process'
 import { MediaInfo } from './store'
 
 interface EncodeCallbacks {
   onProgress: (id: string, percent: number, eta: string) => void
   onComplete: (id: string, outputPath: string) => void
   onError: (id: string, message: string) => void
+}
+
+interface EncodeOptions {
+  outputDir: string
+  preset: string
+  handbrakeCliPath?: string
+  customPresetPaths?: string[]
+  outputFormat?: 'm4v' | 'mp4' | 'mkv' | 'webm'
 }
 
 interface HandbrakeProcess {
@@ -42,13 +50,10 @@ function buildMergedPresetFile(customPresetPaths: string[]): string | null {
 export function startEncode(
   id: string,
   inputPath: string,
-  outputDir: string,
-  preset: string,
-  callbacks: EncodeCallbacks,
-  handbrakeCliPath?: string,
-  customPresetPaths?: string[],
-  outputFormat: 'm4v' | 'mp4' | 'mkv' | 'webm' = 'm4v'
+  options: EncodeOptions,
+  callbacks: EncodeCallbacks
 ): void {
+  const { outputDir, preset, handbrakeCliPath, customPresetPaths, outputFormat = 'm4v' } = options
   const baseName = path.basename(inputPath, path.extname(inputPath))
   const outputPath = path.join(outputDir, `${baseName}.${outputFormat}`)
 
@@ -123,14 +128,14 @@ export function getActiveJobCount(): number {
 }
 
 export function parseScanOutput(stderr: string, filePath: string): MediaInfo {
-  const durationMatch = stderr.match(/\+ duration: (\d+:\d+:\d+)/)
+  const durationMatch = /\+ duration: (\d+:\d+:\d+)/.exec(stderr)
   const duration = durationMatch ? durationMatch[1] : '0:00:00'
 
-  const sizeMatch = stderr.match(/\+ size: (\d+)x(\d+)/)
-  const width = sizeMatch ? parseInt(sizeMatch[1], 10) : 0
-  const height = sizeMatch ? parseInt(sizeMatch[2], 10) : 0
+  const sizeMatch = /\+ size: (\d+)x(\d+)/.exec(stderr)
+  const width = sizeMatch ? Number.parseInt(sizeMatch[1], 10) : 0
+  const height = sizeMatch ? Number.parseInt(sizeMatch[2], 10) : 0
 
-  const codecMatch = stderr.match(/codec:\s*(\w+)/i)
+  const codecMatch = /codec:\s*(\w+)/i.exec(stderr)
   const rawCodec = codecMatch ? codecMatch[1].toLowerCase() : ''
   const codecMap: Record<string, string> = {
     h264: 'H.264',
@@ -146,9 +151,8 @@ export function parseScanOutput(stderr: string, filePath: string): MediaInfo {
   }
   const videoCodec = codecMap[rawCodec] ?? ''
 
-  const audioSectionMatch = stderr.match(
-    /\+ audio tracks:([\s\S]*?)(?=\n\s+\+ subtitle tracks:|\n\s+\+ chapters:|\n\n|$)/
-  )
+  const audioSectionMatch =
+    /\+ audio tracks:([\s\S]*?)(?=\n\s+\+ subtitle tracks:|\n\s+\+ chapters:|\n\n|$)/.exec(stderr)
   const audioTracks: string[] = []
   if (audioSectionMatch) {
     const trackRegex = /\+\s*\d+,\s*.+?\(([^)]+)\)\s*\(([^)]+)\s*ch\)/g
@@ -158,13 +162,15 @@ export function parseScanOutput(stderr: string, filePath: string): MediaInfo {
     }
   }
 
-  const subtitleSectionMatch = stderr.match(
-    /\+ subtitle tracks:([\s\S]*?)(?=\n\s{2,4}\+ [a-z]|\n\n|$)/
+  const subtitleSectionMatch = /\+ subtitle tracks:([\s\S]*?)(?=\n\s{2,4}\+ [a-z]|\n\n|$)/.exec(
+    stderr
   )
   let subtitleCount = 0
   if (subtitleSectionMatch) {
-    const matches = subtitleSectionMatch[1].match(/\+\s*\d+,/g)
-    subtitleCount = matches ? matches.length : 0
+    const countRegex = /\+\s*\d+,/g
+    while (countRegex.exec(subtitleSectionMatch[1]) !== null) {
+      subtitleCount++
+    }
   }
 
   let fileSize = 0
