@@ -15,6 +15,13 @@ export function useQueue(): {
   const [loading, setLoading] = useState(true)
   const [paused, setPaused] = useState(false)
 
+  const updateProgress = useCallback(
+    ({ id, progress, eta }: { id: string; progress: number; eta: string }) => {
+      setQueue((prev) => prev.map((item) => (item.id === id ? { ...item, progress, eta } : item)))
+    },
+    []
+  )
+
   useEffect(() => {
     window.api.getQueue().then((q) => {
       setQueue(q)
@@ -26,9 +33,7 @@ export function useQueue(): {
       setQueue(updatedQueue)
     })
 
-    const cleanupProgress = window.api.onQueueProgress(({ id, progress, eta }) => {
-      setQueue((prev) => prev.map((item) => (item.id === id ? { ...item, progress, eta } : item)))
-    })
+    const cleanupProgress = window.api.onQueueProgress(updateProgress)
 
     const cleanupPaused = window.api.onPausedUpdated((newPaused) => {
       setPaused(newPaused)
@@ -39,7 +44,7 @@ export function useQueue(): {
       cleanupProgress()
       cleanupPaused()
     }
-  }, [])
+  }, [updateProgress])
 
   const removeItem = useCallback(async (id: string) => {
     await window.api.removeItem(id)
