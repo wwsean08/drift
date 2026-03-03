@@ -57,7 +57,10 @@ export function startWatcher(): void {
   })
 
   watcher.on('error', (error: unknown) => {
-    const message = error instanceof Error ? error.message : String(error)
+    let message: string
+    if (error instanceof Error) message = error.message
+    else if (typeof error === 'string') message = error
+    else message = 'Unknown error'
     onWatcherError?.(
       `Watch directory error: ${message}. Check that "${settings.watchDir}" exists and is accessible.`
     )
