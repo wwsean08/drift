@@ -1,6 +1,8 @@
 name: Feature Request
 description: Suggest a new feature or improvement
 labels: ['enhancement']
+assignees:
+  - wwsean08
 body:
   - type: textarea
     id: problem
