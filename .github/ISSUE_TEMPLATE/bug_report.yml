@@ -1,6 +1,8 @@
 name: Bug Report
 description: Report something that isn't working correctly
 labels: ['bug']
+assignees:
+  - wwsean08
 body:
   - type: textarea
     id: description
