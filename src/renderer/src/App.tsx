@@ -159,8 +159,9 @@ function App(): React.JSX.Element {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button
                 onClick={async () => {
+                  if (pendingTab === null) return
                   await saveRef.current?.()
-                  setActiveTab(pendingTab!)
+                  setActiveTab(pendingTab)
                   setShowUnsavedModal(false)
                   setPendingTab(null)
                 }}
@@ -179,7 +180,8 @@ function App(): React.JSX.Element {
               </button>
               <button
                 onClick={() => {
-                  setActiveTab(pendingTab!)
+                  if (pendingTab === null) return
+                  setActiveTab(pendingTab)
                   setShowUnsavedModal(false)
                   setPendingTab(null)
                   globalThis.api.getSettings().then((s) => globalThis.api.setThemePreview(s.theme))

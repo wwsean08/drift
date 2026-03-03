@@ -9,6 +9,8 @@ import {
   OctagonX
 } from 'lucide-react'
 
+type PendingAction = 'remove' | 'cancel' | null
+
 interface QueueItemProps {
   item: QueueItem
   index: number
@@ -54,8 +56,8 @@ const buttonStyle: React.CSSProperties = {
 
 interface QueueItemActionsProps {
   item: QueueItem
-  pendingAction: 'remove' | 'cancel' | null
-  setPendingAction: React.Dispatch<React.SetStateAction<'remove' | 'cancel' | null>>
+  pendingAction: PendingAction
+  setPendingAction: React.Dispatch<React.SetStateAction<PendingAction>>
   onRemove: (id: string) => void
   onRetry: (id: string) => void
   onCancel: (id: string) => void
@@ -98,7 +100,9 @@ function QueueItemActions({
           <button
             title="Copy output path"
             data-tooltip="Copy output path"
-            onClick={() => globalThis.api.copyToClipboard(item.outputFilePath!)}
+            onClick={() =>
+              item.outputFilePath && globalThis.api.copyToClipboard(item.outputFilePath)
+            }
             style={buttonStyle}
           >
             <Copy size={14} />
@@ -168,7 +172,7 @@ function QueueItemMediaInfo({
   item,
   expanded,
   setExpanded
-}: QueueItemMediaInfoProps): React.JSX.Element | null {
+}: Readonly<QueueItemMediaInfoProps>): React.JSX.Element | null {
   if (item.mediaInfo == null) return null
 
   return (
@@ -218,6 +222,53 @@ function QueueItemMediaInfo({
   )
 }
 
+function QueueItemStatus({ item }: Readonly<{ item: QueueItem }>): React.JSX.Element | null {
+  if (item.mediaInfo === undefined && (item.status === 'pending' || item.status === 'encoding')) {
+    return (
+      <span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>Scanning…</span>
+    )
+  }
+  if (item.status === 'encoding') {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div
+          style={{
+            flex: 1,
+            height: '6px',
+            backgroundColor: 'var(--color-border)',
+            borderRadius: '3px',
+            overflow: 'hidden'
+          }}
+        >
+          <div
+            style={{
+              width: `${item.progress}%`,
+              height: '100%',
+              backgroundColor: 'var(--color-accent)',
+              borderRadius: '3px',
+              transition: 'width 0.3s ease'
+            }}
+          />
+        </div>
+        <span
+          style={{
+            fontSize: '12px',
+            color: 'var(--color-text-tertiary)',
+            minWidth: '80px',
+            textAlign: 'right'
+          }}
+        >
+          {Math.round(item.progress)}%{item.eta ? ` - ${item.eta}` : ''}
+        </span>
+      </div>
+    )
+  }
+  if (item.status === 'failed' && item.error) {
+    return <span style={{ fontSize: '12px', color: 'var(--color-error)' }}>{item.error}</span>
+  }
+  return null
+}
+
 function QueueItem({
   item,
   index,
@@ -234,27 +285,27 @@ function QueueItem({
   onDrop
 }: Readonly<QueueItemProps>): React.JSX.Element {
   const [expanded, setExpanded] = useState(false)
-  const [pendingAction, setPendingAction] = useState<'remove' | 'cancel' | null>(null)
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null)
 
   const canDrag = isEditingOrder && item.status === 'pending'
 
-  return (
-    <div
-      role="listitem"
-      draggable={canDrag}
-      onDragStart={
-        canDrag
-          ? (e) => {
-              e.dataTransfer.setData('text/plain', item.id)
-              onDragStart(item.id)
-            }
-          : undefined
+  const handleDragStart = canDrag
+    ? (e: React.DragEvent): void => {
+        e.dataTransfer.setData('text/plain', item.id)
+        onDragStart(item.id)
       }
+    : undefined
+
+  return (
+    <li
+      draggable={canDrag}
+      onDragStart={handleDragStart}
       onDragEnd={canDrag ? onDragEnd : undefined}
       onDragOver={(e) => onDragOver(e, item.id)}
       onDragLeave={onDragLeave}
       onDrop={(e) => onDrop(e, item.id)}
       style={{
+        listStyle: 'none',
         padding: '12px 16px',
         borderTop: dropIndicator === 'above' ? '2px solid var(--color-accent)' : undefined,
         borderBottom:
@@ -308,51 +359,9 @@ function QueueItem({
         </div>
       </div>
 
-      {item.mediaInfo === undefined &&
-        (item.status === 'pending' || item.status === 'encoding') && (
-          <span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>Scanning…</span>
-        )}
-
       <QueueItemMediaInfo item={item} expanded={expanded} setExpanded={setExpanded} />
-
-      {item.status === 'encoding' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div
-            style={{
-              flex: 1,
-              height: '6px',
-              backgroundColor: 'var(--color-border)',
-              borderRadius: '3px',
-              overflow: 'hidden'
-            }}
-          >
-            <div
-              style={{
-                width: `${item.progress}%`,
-                height: '100%',
-                backgroundColor: 'var(--color-accent)',
-                borderRadius: '3px',
-                transition: 'width 0.3s ease'
-              }}
-            />
-          </div>
-          <span
-            style={{
-              fontSize: '12px',
-              color: 'var(--color-text-tertiary)',
-              minWidth: '80px',
-              textAlign: 'right'
-            }}
-          >
-            {Math.round(item.progress)}%{item.eta ? ` - ${item.eta}` : ''}
-          </span>
-        </div>
-      )}
-
-      {item.status === 'failed' && item.error && (
-        <span style={{ fontSize: '12px', color: 'var(--color-error)' }}>{item.error}</span>
-      )}
-    </div>
+      <QueueItemStatus item={item} />
+    </li>
   )
 }
 
