@@ -8,6 +8,7 @@ type Tab = 'queue' | 'settings' | 'about'
 function App(): React.JSX.Element {
   const [activeTab, setActiveTab] = useState<Tab>('queue')
   const [appError, setAppError] = useState<string | null>(null)
+  const [updateInfo, setUpdateInfo] = useState<{ version: string; url: string } | null>(null)
   const [settingsDirty, setSettingsDirty] = useState(false)
   const [pendingTab, setPendingTab] = useState<Tab | null>(null)
   const [showUnsavedModal, setShowUnsavedModal] = useState(false)
@@ -26,11 +27,15 @@ function App(): React.JSX.Element {
     const cleanupWatchDir = globalThis.api.onWatchDirValid(() => {
       setAppError(null)
     })
+    const cleanupUpdateAvailable = globalThis.api.onUpdateAvailable((data) => {
+      setUpdateInfo(data)
+    })
     return () => {
       cleanupError()
       cleanupHandbrake()
       cleanupOutputDir()
       cleanupWatchDir()
+      cleanupUpdateAvailable()
     }
   }, [])
 
@@ -54,6 +59,47 @@ function App(): React.JSX.Element {
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       }}
     >
+      {updateInfo && (
+        <div
+          style={{
+            padding: '8px 16px',
+            backgroundColor: 'var(--color-accent-bg)',
+            borderBottom: '1px solid var(--color-accent)',
+            color: 'var(--color-accent)',
+            fontSize: '13px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
+          <span>
+            Version {updateInfo.version} is available.{' '}
+            <a
+              href={updateInfo.url}
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: 'var(--color-accent)', fontWeight: 600 }}
+            >
+              Download
+            </a>
+          </span>
+          <button
+            onClick={() => setUpdateInfo(null)}
+            title="Dismiss"
+            data-tooltip="Dismiss"
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--color-accent)',
+              fontWeight: 'bold'
+            }}
+          >
+            X
+          </button>
+        </div>
+      )}
+
       {appError && (
         <div
           style={{

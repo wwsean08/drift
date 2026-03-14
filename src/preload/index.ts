@@ -66,6 +66,15 @@ const api = {
     return () => ipcRenderer.removeListener('app:watch-dir-valid', handler)
   },
 
+  onUpdateAvailable: (callback: (data: { version: string; url: string }) => void) => {
+    const handler = (
+      _event: Electron.IpcRendererEvent,
+      data: { version: string; url: string }
+    ): void => callback(data)
+    ipcRenderer.on('app:update-available', handler)
+    return () => ipcRenderer.removeListener('app:update-available', handler)
+  },
+
   setThemePreview: (theme: 'system' | 'light' | 'dark') =>
     ipcRenderer.invoke('theme:setPreview', theme),
 

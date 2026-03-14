@@ -70,6 +70,7 @@ declare global {
     onHandbrakeValid: (callback: () => void) => () => void
     onOutputDirValid: (callback: () => void) => () => void
     onWatchDirValid: (callback: () => void) => () => void
+    onUpdateAvailable: (callback: (data: { version: string; url: string }) => void) => () => void
     setThemePreview: (theme: 'system' | 'light' | 'dark') => Promise<void>
     copyToClipboard: (text: string) => Promise<void>
     platform: string

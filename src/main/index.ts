@@ -98,6 +98,21 @@ app.on('ready', async () => {
   if (process.platform === 'win32' || (process.platform === 'linux' && process.env['APPIMAGE'])) {
     autoUpdater.checkForUpdatesAndNotify().catch(console.error)
   }
+
+  if (process.platform === 'darwin') {
+    autoUpdater.once('update-available', (info) => {
+      const url = `https://github.com/wwsean08/drift/releases/tag/v${info.version}`
+      const sendUpdate = (): void => {
+        mainWindow.webContents.send('app:update-available', { version: info.version, url })
+      }
+      if (mainWindow.webContents.isLoading()) {
+        mainWindow.webContents.once('did-finish-load', sendUpdate)
+      } else {
+        sendUpdate()
+      }
+    })
+    autoUpdater.checkForUpdates().catch(console.error)
+  }
 })
 
 app.on('window-all-closed', () => {
