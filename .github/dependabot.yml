@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      electron-toolkit:
+        patterns:
+          - '@electron-toolkit/*'
+      react:
+        patterns:
+          - react
+          - react-dom
+          - '@types/react'
+          - '@types/react-dom'
+      typescript-eslint:
+        patterns:
+          - typescript
+          - eslint
+          - 'eslint-*'
+          - '@typescript-eslint/*'
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
