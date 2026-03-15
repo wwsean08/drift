@@ -60,6 +60,16 @@ Drift is an Electron app built with electron-vite (Vite-based toolchain). The ma
 - **HandBrakeCLI**: Not bundled — must be installed by the user or pointed to via the `handbrakeCliPath` setting. The app checks on startup and shows an error banner if not found.
 - **Renderer path alias**: `@renderer/*` maps to `src/renderer/src/*`.
 
+## Code Quality
+
+After writing changes that could affect code quality — including new logic, refactored functions, added complexity, or security-sensitive code — run a SonarQube analysis using the SonarQube MCP server:
+
+1. Use `mcp__sonarqube__analyze_code_snippet` to scan the changed code snippets for bugs, code smells, and vulnerabilities.
+2. If the project is registered in SonarQube, use `mcp__sonarqube__search_sonar_issues_in_projects` and `mcp__sonarqube__get_project_quality_gate_status` to check overall project health.
+3. Review any issues found and fix them before considering the task complete. Prioritise blockers and critical severity issues.
+
+Triggers for running a scan: new functions or methods, changes to error handling or async flow, security-sensitive operations (file I/O, IPC handlers, process spawning), and any logic touching the encoder, queue, or store.
+
 ## Code Style
 
 - Prettier: single quotes, no semicolons, 100 char width, no trailing commas
