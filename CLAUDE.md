@@ -31,7 +31,7 @@ Drift is an Electron app built with electron-vite (Vite-based toolchain). The ma
 
 **Main process (`src/main/`):**
 
-- `index.ts` — App entry: creates window, tray, starts watcher, checks for HandBrakeCLI
+- `index.ts` — App entry: creates window, tray, starts watcher, checks for HandBrakeCLI, manages auto-updates via electron-updater
 - `store.ts` — Persistent state via electron-store (AppSettings + QueueItem[] schema)
 - `watcher.ts` — chokidar file watcher on the configured watch directory
 - `encoder.ts` — Wraps handbrake-js to spawn HandBrakeCLI processes
@@ -46,11 +46,11 @@ Drift is an Electron app built with electron-vite (Vite-based toolchain). The ma
 
 **Renderer (`src/renderer/src/`):**
 
-- Simple tab-based UI (Queue / Settings), no router or state management library
+- Simple tab-based UI (Queue / Settings / About), no router or state management library
 - `hooks/useIpc.ts` — `useQueue()` hook subscribes to IPC events with cleanup
 - Components use inline styles (no CSS-in-JS library)
 
-**IPC flow:** Renderer calls `window.api.*` methods (invoke) → preload forwards via ipcRenderer → main handles in `ipc.ts`. Main pushes updates to renderer via `webContents.send()` for `queue:updated`, `queue:progress`, and `app:error` events.
+**IPC flow:** Renderer calls `window.api.*` methods (invoke) → preload forwards via ipcRenderer → main handles in `ipc.ts`. Main pushes updates to renderer via `webContents.send()` for these events: `queue:updated`, `queue:progress`, `paused:updated`, `app:error`, `app:handbrake-valid`, `app:output-dir-valid`, `app:watch-dir-valid`, `app:update-available`.
 
 ## Key Technical Decisions
 
