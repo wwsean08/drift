@@ -483,8 +483,7 @@ function PresetCombobox({
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       const currentPos = selectableIndices.indexOf(highlightedIndex)
-      const prev =
-        selectableIndices[currentPos - 1] ?? selectableIndices[selectableIndices.length - 1]
+      const prev = selectableIndices[currentPos - 1] ?? selectableIndices.at(-1)
       setHighlightedIndex(prev ?? -1)
       scrollToIndex(prev, dropdownRef)
     } else if (e.key === 'Enter') {

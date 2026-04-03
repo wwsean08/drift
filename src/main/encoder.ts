@@ -57,20 +57,20 @@ function resolveDateTokens(template: string, inputPath: string): string {
     const dateStr = `${btime.getFullYear()}-${pad(btime.getMonth() + 1)}-${pad(btime.getDate())}`
     const timeStr = `${pad(btime.getHours())}-${pad(btime.getMinutes())}-${pad(btime.getSeconds())}`
     return template
-      .replace(/\{creation_date\}/g, dateStr)
-      .replace(/\{creation_datetime\}/g, `${dateStr}_${timeStr}`)
+      .replaceAll('{creation_date}', dateStr)
+      .replaceAll('{creation_datetime}', `${dateStr}_${timeStr}`)
   } catch {
-    return template.replace(/\{creation_date\}/g, '').replace(/\{creation_datetime\}/g, '')
+    return template.replaceAll('{creation_date}', '').replaceAll('{creation_datetime}', '')
   }
 }
 
 function resolveMediaTokens(template: string, mediaInfo: MediaInfo | null | undefined): string {
   if (!mediaInfo) {
     return template
-      .replace(/\{resolution\}/g, '')
-      .replace(/\{width\}/g, '')
-      .replace(/\{height\}/g, '')
-      .replace(/\{duration\}/g, '')
+      .replaceAll('{resolution}', '')
+      .replaceAll('{width}', '')
+      .replaceAll('{height}', '')
+      .replaceAll('{duration}', '')
   }
   const { width, height, duration } = mediaInfo
   let resolution = ''
@@ -81,10 +81,10 @@ function resolveMediaTokens(template: string, mediaInfo: MediaInfo | null | unde
   else if (height >= 480) resolution = '480p'
   else if (height > 0) resolution = `${height}p`
   return template
-    .replace(/\{resolution\}/g, resolution)
-    .replace(/\{width\}/g, width > 0 ? String(width) : '')
-    .replace(/\{height\}/g, height > 0 ? String(height) : '')
-    .replace(/\{duration\}/g, duration ? duration.replace(/:/g, '-') : '')
+    .replaceAll('{resolution}', resolution)
+    .replaceAll('{width}', width > 0 ? String(width) : '')
+    .replaceAll('{height}', height > 0 ? String(height) : '')
+    .replaceAll('{duration}', duration ? duration.replaceAll(':', '-') : '')
 }
 
 export function resolveFilenameTemplate(
@@ -100,19 +100,20 @@ export function resolveFilenameTemplate(
   result = resolveMediaTokens(result, mediaInfo)
 
   // Drop unrecognised {token} placeholders, but preserve {name} for last-step substitution
-  result = result.replace(/\{(?!name\})[^}]*\}/g, '')
+  result = result.replaceAll(/\{[^}]*\}/g, (m) => (m === '{name}' ? m : ''))
 
   // Sanitize filesystem-unsafe chars (including null byte); collapse duplicate separators; trim edges
   result = result
-    .replace(/[<>:"/\\|?*\x00]/g, '')
-    .replace(/[-_.\s]{2,}/g, '_')
+    .replaceAll(/[<>:"/\\|?*\0]/g, '')
+    .replaceAll(/[-_.\s]{2,}/g, '_')
     .trim()
-    .replace(/^[-_.]+|[-_.]+$/g, '')
+    .replace(/^[-_.]+/, '')
+  result = result.replace(/[-_.]+$/, '')
 
   // Substitute {name} last so the original basename is never scanned for tokens above.
   // Sanitize the basename itself so unsafe chars from the source filename don't bypass the pass above.
-  const safeBaseName = originalBaseName.replace(/[<>:"/\\|?*\x00]/g, '')
-  result = result.replace(/\{name\}/g, safeBaseName)
+  const safeBaseName = originalBaseName.replaceAll(/[<>:"/\\|?*\0]/g, '')
+  result = result.replaceAll('{name}', safeBaseName)
 
   // Guard against Windows reserved device names (CON, NUL, PRN, AUX, COM1–9, LPT1–9)
   if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(result)) {
