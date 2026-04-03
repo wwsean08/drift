@@ -18,6 +18,8 @@ interface EncodeOptions {
   handbrakeCliPath?: string
   customPresetPaths?: string[]
   outputFormat?: 'm4v' | 'mp4' | 'mkv' | 'webm'
+  outputFilenameTemplate?: string
+  mediaInfo?: MediaInfo | null
 }
 
 interface HandbrakeProcess {
@@ -47,6 +49,79 @@ function buildMergedPresetFile(customPresetPaths: string[]): string | null {
   return tmpPath
 }
 
+function resolveDateTokens(template: string, inputPath: string): string {
+  try {
+    const stat = fs.statSync(inputPath)
+    const btime = stat.birthtime.getTime() === 0 ? stat.mtime : stat.birthtime
+    const pad = (n: number): string => String(n).padStart(2, '0')
+    const dateStr = `${btime.getFullYear()}-${pad(btime.getMonth() + 1)}-${pad(btime.getDate())}`
+    const timeStr = `${pad(btime.getHours())}-${pad(btime.getMinutes())}-${pad(btime.getSeconds())}`
+    return template
+      .replace(/\{creation_date\}/g, dateStr)
+      .replace(/\{creation_datetime\}/g, `${dateStr}_${timeStr}`)
+  } catch {
+    return template.replace(/\{creation_date\}/g, '').replace(/\{creation_datetime\}/g, '')
+  }
+}
+
+function resolveMediaTokens(template: string, mediaInfo: MediaInfo | null | undefined): string {
+  if (!mediaInfo) {
+    return template
+      .replace(/\{resolution\}/g, '')
+      .replace(/\{width\}/g, '')
+      .replace(/\{height\}/g, '')
+      .replace(/\{duration\}/g, '')
+  }
+  const { width, height, duration } = mediaInfo
+  let resolution = ''
+  if (height >= 2160) resolution = '4K'
+  else if (height >= 1440) resolution = '1440p'
+  else if (height >= 1080) resolution = '1080p'
+  else if (height >= 720) resolution = '720p'
+  else if (height >= 480) resolution = '480p'
+  else if (height > 0) resolution = `${height}p`
+  return template
+    .replace(/\{resolution\}/g, resolution)
+    .replace(/\{width\}/g, width > 0 ? String(width) : '')
+    .replace(/\{height\}/g, height > 0 ? String(height) : '')
+    .replace(/\{duration\}/g, duration ? duration.replace(/:/g, '-') : '')
+}
+
+export function resolveFilenameTemplate(
+  template: string,
+  inputPath: string,
+  mediaInfo: MediaInfo | null | undefined
+): string {
+  const originalBaseName = path.basename(inputPath, path.extname(inputPath))
+
+  // Resolve all tokens EXCEPT {name} first, so a filename that itself contains a token
+  // string (e.g. "movie_{resolution}.mkv") is never double-expanded into the output.
+  let result = resolveDateTokens(template, inputPath)
+  result = resolveMediaTokens(result, mediaInfo)
+
+  // Drop unrecognised {token} placeholders, but preserve {name} for last-step substitution
+  result = result.replace(/\{(?!name\})[^}]*\}/g, '')
+
+  // Sanitize filesystem-unsafe chars (including null byte); collapse duplicate separators; trim edges
+  result = result
+    .replace(/[<>:"/\\|?*\x00]/g, '')
+    .replace(/[-_.\s]{2,}/g, '_')
+    .trim()
+    .replace(/^[-_.]+|[-_.]+$/g, '')
+
+  // Substitute {name} last so the original basename is never scanned for tokens above.
+  // Sanitize the basename itself so unsafe chars from the source filename don't bypass the pass above.
+  const safeBaseName = originalBaseName.replace(/[<>:"/\\|?*\x00]/g, '')
+  result = result.replace(/\{name\}/g, safeBaseName)
+
+  // Guard against Windows reserved device names (CON, NUL, PRN, AUX, COM1–9, LPT1–9)
+  if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(result)) {
+    result = `${result}_`
+  }
+
+  return result || safeBaseName || originalBaseName
+}
+
 export function startEncode(
   id: string,
   inputPath: string,
@@ -54,7 +129,11 @@ export function startEncode(
   callbacks: EncodeCallbacks
 ): void {
   const { outputDir, preset, handbrakeCliPath, customPresetPaths, outputFormat = 'm4v' } = options
-  const baseName = path.basename(inputPath, path.extname(inputPath))
+  const baseName = resolveFilenameTemplate(
+    options.outputFilenameTemplate || '{name}',
+    inputPath,
+    options.mediaInfo ?? null
+  )
   const outputPath = path.join(outputDir, `${baseName}.${outputFormat}`)
 
   const spawnOptions: Record<string, string> = {

@@ -1,4 +1,5 @@
 import { accessSync, constants } from 'node:fs'
+import { stat, unlink } from 'node:fs/promises'
 import { BrowserWindow } from 'electron'
 import {
   getSettings,
@@ -76,7 +77,9 @@ export function processQueue(): void {
         handbrakeCliPath: settings.handbrakeCliPath || undefined,
         customPresetPaths:
           (settings.customPresetPaths || []).length > 0 ? settings.customPresetPaths : undefined,
-        outputFormat: settings.outputFormat || 'm4v'
+        outputFormat: settings.outputFormat || 'm4v',
+        outputFilenameTemplate: settings.outputFilenameTemplate || '{name}',
+        mediaInfo: item.mediaInfo ?? null
       },
       {
         onProgress: (id, percent, eta) => {
@@ -93,6 +96,28 @@ export function processQueue(): void {
           sendToRenderer('queue:updated', getQueue())
           rebuildTrayMenu()
           processQueue()
+
+          // Delete source file if configured — after queue item is marked complete
+          const currentSettings = getSettings()
+          if (currentSettings.deleteInputOnComplete) {
+            stat(outputFilePath)
+              .then((s) => {
+                if (s.size > 0) {
+                  console.log(
+                    `Deleting source file after encoding (output ${s.size} bytes): ${item.filePath}`
+                  )
+                  return unlink(item.filePath)
+                }
+                console.error(
+                  `Skipping deletion — output file missing or empty: ${outputFilePath}`
+                )
+                return undefined
+              })
+              .catch((err: unknown) => {
+                console.error(`Failed to delete input file after encoding: ${item.filePath}`, err)
+                sendToRenderer('app:error', `Failed to delete source file: ${item.filePath}`)
+              })
+          }
         },
         onError: (id, message) => {
           updateQueueItem(id, {

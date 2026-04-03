@@ -21,6 +21,9 @@
   --color-error-border: #fecaca;
   --color-error-text: #991b1b;
   --color-accent-bg: #eff6ff;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #f59e0b;
+  --color-warning-text: #92400e;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -41,6 +44,9 @@
     --color-error-border: #7f1d1d;
     --color-error-text: #fca5a5;
     --color-accent-bg: #1e3a5f;
+    --color-warning-bg: #1c1a0f;
+    --color-warning-border: #b45309;
+    --color-warning-text: #fcd34d;
   }
 }
 

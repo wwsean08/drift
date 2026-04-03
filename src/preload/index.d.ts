@@ -16,6 +16,8 @@ declare global {
     customPresetPaths: string[]
     outputFormat: 'm4v' | 'mp4' | 'mkv' | 'webm'
     theme: 'system' | 'light' | 'dark'
+    outputFilenameTemplate: string
+    deleteInputOnComplete: boolean
   }
 
   type QueueItemStatus = 'pending' | 'encoding' | 'complete' | 'failed' | 'cancelled'

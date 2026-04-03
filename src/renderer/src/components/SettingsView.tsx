@@ -263,6 +263,66 @@ function SettingsView({
         </span>
       </FieldGroup>
 
+      <FieldGroup label="Output Filename Template">
+        <input
+          type="text"
+          value={settings.outputFilenameTemplate || '{name}'}
+          onChange={(e) => setSettings({ ...settings, outputFilenameTemplate: e.target.value })}
+          placeholder="{name}"
+          style={inputStyle}
+        />
+        <details style={{ marginTop: '4px' }}>
+          <summary
+            style={{
+              fontSize: '11px',
+              color: 'var(--color-text-muted)',
+              cursor: 'pointer',
+              userSelect: 'none'
+            }}
+          >
+            Available tokens
+          </summary>
+          <div
+            style={{
+              marginTop: '6px',
+              padding: '8px 10px',
+              backgroundColor: 'var(--color-bg-tertiary)',
+              borderRadius: '6px',
+              fontSize: '11px',
+              color: 'var(--color-text-tertiary)',
+              lineHeight: '1.7'
+            }}
+          >
+            <div>
+              <code>{'{name}'}</code> — original filename without extension
+            </div>
+            <div>
+              <code>{'{creation_date}'}</code> — file creation date as YYYY-MM-DD
+            </div>
+            <div>
+              <code>{'{creation_datetime}'}</code> — file creation date &amp; time as
+              YYYY-MM-DD_HH-MM-SS
+            </div>
+            <div>
+              <code>{'{resolution}'}</code> — shorthand e.g. 1080p, 4K (requires metadata scan)
+            </div>
+            <div>
+              <code>{'{width}'}</code> — pixel width (requires metadata scan)
+            </div>
+            <div>
+              <code>{'{height}'}</code> — pixel height (requires metadata scan)
+            </div>
+            <div>
+              <code>{'{duration}'}</code> — duration as HH-MM-SS (requires metadata scan)
+            </div>
+          </div>
+        </details>
+        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+          Metadata tokens may be empty for the first file if the scan has not completed before
+          encoding starts.
+        </span>
+      </FieldGroup>
+
       <FieldGroup label="Max Parallel Encodes">
         <input
           type="number"
@@ -310,6 +370,35 @@ function SettingsView({
             Queue files already in watch directory on startup
           </span>
         </label>
+      </FieldGroup>
+
+      <FieldGroup label="Delete Input File on Completion">
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={settings.deleteInputOnComplete ?? false}
+            onChange={(e) => setSettings({ ...settings, deleteInputOnComplete: e.target.checked })}
+          />
+          <span style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>
+            Permanently delete the source file after successful encoding
+          </span>
+        </label>
+        <div
+          style={{
+            marginTop: '6px',
+            padding: '10px 12px',
+            backgroundColor: 'var(--color-warning-bg)',
+            border: '1px solid var(--color-warning-border)',
+            borderRadius: '6px',
+            fontSize: '12px',
+            color: 'var(--color-warning-text)',
+            lineHeight: '1.5'
+          }}
+        >
+          <strong>Warning:</strong> When enabled, source video files will be permanently deleted
+          from disk after encoding completes successfully. This action cannot be undone. Verify your
+          encoded output before enabling this setting.
+        </div>
       </FieldGroup>
 
       <div style={{ marginTop: '8px' }}>

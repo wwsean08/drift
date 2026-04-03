@@ -19,6 +19,8 @@ Drift is a desktop application that automatically transcodes video files using [
 - **Media metadata** — view resolution, duration, codec, audio tracks, subtitles, and file size for each queued item
 - **Copy output path** — copy the encoded file's path to the clipboard with one click
 - **Dark mode** — switch between light and dark themes
+- **Custom output filename** — configure a template with tokens like `{name}`, `{resolution}`, `{creation_date}` to control how output files are named
+- **Delete input on completion** — optionally delete source files after successful encoding (with a prominent warning)
 - **Auto-updates** — Windows and Linux (AppImage) builds update automatically
 
 ## Prerequisites
@@ -58,6 +60,8 @@ Download the latest release for your platform from the [Releases](https://github
    - **Video Extensions** — comma-separated list of file extensions to watch (default: `.mp4, .mkv, .avi, .mov, .wmv, .flv, .webm, .m4v, .ts`)
    - **Queue Existing Files** — check this to queue files already in the watch directory when the watcher starts
    - **Theme** — choose between light and dark mode
+   - **Output Filename Template** — template string for naming output files. Tokens: `{name}` (always available), `{creation_date}` (YYYY-MM-DD), `{creation_datetime}` (YYYY-MM-DD_HH-MM-SS), `{resolution}` (e.g. 1080p, 4K), `{width}`, `{height}`, `{duration}` (HH-MM-SS). Metadata tokens may be empty if the scan has not completed before encoding starts. Default: `{name}`
+   - **Delete Input File on Completion** — when enabled, the original source file is permanently deleted after encoding succeeds. An amber warning is always displayed in Settings.
 
    Click **Save Settings** when done.
 

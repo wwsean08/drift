@@ -32,9 +32,9 @@ Drift is an Electron app built with electron-vite (Vite-based toolchain). The ma
 **Main process (`src/main/`):**
 
 - `index.ts` — App entry: creates window, tray, starts watcher, checks for HandBrakeCLI, manages auto-updates via electron-updater
-- `store.ts` — Persistent state via electron-store (AppSettings + QueueItem[] schema)
+- `store.ts` — Persistent state via electron-store (AppSettings + QueueItem[] schema). AppSettings fields: `watchDir`, `outputDir`, `preset`, `maxParallel`, `videoExtensions`, `queueExistingFiles`, `handbrakeCliPath`, `paused`, `customPresetPaths`, `outputFormat`, `theme`, `outputFilenameTemplate`, `deleteInputOnComplete`
 - `watcher.ts` — chokidar file watcher on the configured watch directory
-- `encoder.ts` — Wraps handbrake-js to spawn HandBrakeCLI processes
+- `encoder.ts` — Wraps handbrake-js to spawn HandBrakeCLI processes; exports `resolveFilenameTemplate(template, inputPath, mediaInfo)` for token-based output filename resolution
 - `queue.ts` — Orchestrates encoding: fills parallel slots, handles completion/failure, crash recovery
 - `tray.ts` — System tray with minimize-to-tray behavior (window hides on close, app stays alive)
 - `ipc.ts` — All IPC handler registrations
@@ -69,6 +69,8 @@ After writing changes that could affect code quality — including new logic, re
 3. Review any issues found and fix them before considering the task complete. Prioritise blockers and critical severity issues.
 
 Triggers for running a scan: new functions or methods, changes to error handling or async flow, security-sensitive operations (file I/O, IPC handlers, process spawning), and any logic touching the encoder, queue, or store.
+
+Whenever new npm dependencies are introduced, run `npm audit` and resolve any fixable vulnerabilities with `npm audit fix` before considering the task complete. If `npm audit fix` makes changes, re-run `npm run build` to confirm nothing broke.
 
 ## Code Style
 

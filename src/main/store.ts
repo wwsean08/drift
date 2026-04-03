@@ -12,6 +12,8 @@ export interface AppSettings {
   customPresetPaths: string[]
   outputFormat: 'm4v' | 'mp4' | 'mkv' | 'webm'
   theme: 'system' | 'light' | 'dark'
+  outputFilenameTemplate: string
+  deleteInputOnComplete: boolean
 }
 
 export type QueueItemStatus = 'pending' | 'encoding' | 'complete' | 'failed' | 'cancelled'
@@ -57,7 +59,9 @@ const defaults: StoreSchema = {
     paused: false,
     customPresetPaths: [],
     outputFormat: 'm4v',
-    theme: 'system'
+    theme: 'system',
+    outputFilenameTemplate: '{name}',
+    deleteInputOnComplete: false
   },
   queue: []
 }
